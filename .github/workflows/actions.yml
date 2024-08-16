@@ -1,0 +1,83 @@
+name: Build and Push to Docker Hub
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-server:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to DigitalOcean Container Registry
+      run: echo "${{ secrets.DO_REGISTRY_PASS }}" | docker login --username ${{ secrets.DO_REGISTRY_USER }} --password-stdin ${{ secrets.DO_REGISTY_URL }}
+
+    - name: Build and tag Docker image
+      run: docker build -f Dockerfile.server -t ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:server .
+
+    - name: Push Docker image to DigitalOcean
+      run: docker push ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:server
+  
+  build-migrator:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to DigitalOcean Container Registry
+      run: echo "${{ secrets.DO_REGISTRY_PASS }}" | docker login --username ${{ secrets.DO_REGISTRY_USER }} --password-stdin ${{ secrets.DO_REGISTY_URL }}
+
+    - name: Build and tag Docker image
+      run: docker build -f Dockerfile.migrator -t ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:migrator .
+
+    - name: Push Docker image to DigitalOcean
+      run: docker push ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:migrator
+  
+  build-worker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to DigitalOcean Container Registry
+      run: echo "${{ secrets.DO_REGISTRY_PASS }}" | docker login --username ${{ secrets.DO_REGISTRY_USER }} --password-stdin ${{ secrets.DO_REGISTY_URL }}
+
+    - name: Build and tag Docker image
+      run: docker build -f Dockerfile.worker -t ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:worker .
+
+    - name: Push Docker image to DigitalOcean
+      run: docker push ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:worker
+  
+  build-ticker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to DigitalOcean Container Registry
+      run: echo "${{ secrets.DO_REGISTRY_PASS }}" | docker login --username ${{ secrets.DO_REGISTRY_USER }} --password-stdin ${{ secrets.DO_REGISTY_URL }}
+
+    - name: Build and tag Docker image
+      run: docker build -f Dockerfile.ticker -t ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:ticker .
+
+    - name: Push Docker image to DigitalOcean
+      run: docker push ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:ticker
+  

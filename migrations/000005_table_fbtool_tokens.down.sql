@@ -1,0 +1,1 @@
+drop table if exists fbtool_tokens;
