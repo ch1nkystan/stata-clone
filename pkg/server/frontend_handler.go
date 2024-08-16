@@ -122,3 +122,38 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 
 	return c.JSON(res)
 }
+
+func (s *Server) depositsLogHandler(c *fiber.Ctx) error {
+	req := &dateRangeRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	if err := req.validate(); err != nil {
+		return s.BadRequest(c, err)
+	}
+
+	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	deposits, err := s.deps.PG.SelectDepositsByBotID(bot.ID, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	for i, d := range deposits {
+		deposits[i].Hash = d.Hash[len(d.Hash)-10:]
+	}
+
+	res := &depositsLogResponse{
+		Data: deposits,
+	}
+
+	return c.JSON(res)
+}
+
+type depositsLogResponse struct {
+	Data []*types.DepositRow `json:"data"`
+}

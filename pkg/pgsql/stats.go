@@ -215,3 +215,30 @@ from cte;`
 
 	return conversions, nil
 }
+
+func (c *PGSQLClient) SelectDepositsByBotID(botID int, start, end time.Time) ([]*types.DepositRow, error) {
+	sess := c.GetSession()
+	res := make([]*types.DepositRow, 0)
+
+	q := `select tx.id as id,
+	   tx.user_id 	        as user_id,
+       tx.tx_key            as hash,
+       dl.label             as deeplink,
+       tx.blockchain        as blockchain,
+       tx.amount * tx.price as amount,
+	   tx.created_at        as date
+from transactions tx
+         join public.users u on u.id = tx.user_id
+		 join deeplinks dl on u.deeplink_id = dl.id
+where u.bot_id = ?
+  and u.deposited = true
+  and tx.created_at >= ?
+  and tx.created_at <= ?
+order by tx.created_at desc;`
+
+	if _, err := sess.SelectBySql(q, botID, start, end).Load(&res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}

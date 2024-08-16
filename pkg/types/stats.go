@@ -12,6 +12,8 @@ type ConversionRow struct {
 	LeadsPerUser        float64 `db:"leads_per_user" json:"leads_per_user"`
 	LeadsConversionRate float64 `db:"leads_conversion_rate" json:"leads_conversion_rate"`
 	Profit              float64 `db:"profit" json:"profit"`
+	Income              float64 `db:"income" json:"income"`
+	Expenses            float64 `db:"expenses" json:"expenses"`
 
 	Label          string                    `db:"label" json:"label"`
 	Deeplinks      []*ConversionRow          `db:"deeplinks,omitempty" json:"deeplinks,omitempty"`
@@ -19,4 +21,13 @@ type ConversionRow struct {
 
 	ByDayDB time.Time `db:"by_day" json:"-"`
 	ByDay   string    `db:"-" json:"by_day,omitempty"`
+}
+
+type DepositRow struct {
+	ID         int       `db:"id" json:"id"`
+	Hash       string    `db:"hash" json:"hash"`
+	Deeplink   string    `db:"deeplink" json:"deeplink"`
+	Blockchain string    `db:"blockchain" json:"blockchain"`
+	Amount     float64   `db:"amount" json:"amount"`
+	Date       time.Time `db:"date" json:"date"`
 }

@@ -101,6 +101,7 @@ func New(cfg *Config, deps *Deps) *Server {
 	// method used by frontend to get stats
 	f := s.App.Group("/f/api", s.apiMiddlewareFrontend)
 	f.Post("/stats/conversions-by-day", s.conversionsByDayHandler)
+	f.Post("/stats/deposits-log", s.depositsLogHandler)
 
 	return s
 }
