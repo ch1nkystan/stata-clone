@@ -157,3 +157,28 @@ func (s *Server) depositsLogHandler(c *fiber.Ctx) error {
 type depositsLogResponse struct {
 	Data []*types.DepositRow `json:"data"`
 }
+
+func (s *Server) usersRecapHandler(c *fiber.Ctx) error {
+	req := &dateRangeRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	if err := req.validate(); err != nil {
+		return s.BadRequest(c, err)
+	}
+
+	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	recap, err := s.deps.PG.SelectUsersRecap(bot.ID)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	recap.UniqueRate = float64(recap.UsersUnique) / float64(recap.UsersTotal) * 100
+
+	return c.JSON(recap)
+}

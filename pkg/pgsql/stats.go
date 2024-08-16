@@ -242,3 +242,18 @@ order by tx.created_at desc;`
 
 	return res, nil
 }
+
+func (c *PGSQLClient) SelectUsersRecap(botID int) (*types.UsersRecap, error) {
+	sess := c.GetSession()
+	res := &types.UsersRecap{}
+
+	q := `select count(*) as users_total, sum(case when u.seen > 0 then 0 else 1 end) as users_unique
+from users u
+where bot_id = ?`
+
+	if err := sess.SelectBySql(q, botID).LoadOne(res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}

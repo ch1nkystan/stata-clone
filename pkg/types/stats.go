@@ -31,3 +31,9 @@ type DepositRow struct {
 	Amount     float64   `db:"amount" json:"amount"`
 	Date       time.Time `db:"date" json:"date"`
 }
+
+type UsersRecap struct {
+	UsersTotal  int     `db:"users_total" json:"users_total"`
+	UsersUnique int     `db:"users_unique" json:"users_unique"`
+	UniqueRate  float64 `db:"unique_rate" json:"unique_rate"`
+}
