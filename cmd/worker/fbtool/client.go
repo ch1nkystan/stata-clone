@@ -9,10 +9,8 @@ import (
 	"time"
 )
 
-const host = "https://fbtool.pro"
-
 type Client struct {
-	HTTPClient *http.Client
+	httpClient *http.Client
 	APIKey     string
 }
 
@@ -22,7 +20,7 @@ func NewClient(token string) *Client {
 	}
 
 	dc := &Client{
-		HTTPClient: client,
+		httpClient: client,
 		APIKey:     token,
 	}
 
@@ -41,11 +39,9 @@ type StatisticsAccount struct {
 	AccountID string `json:"account_id"`
 	Currency  string `json:"currency"`
 
-	Ads StatisticsAccountAds `json:"ads"`
-}
-
-type StatisticsAccountAds struct {
-	Data []StatisticsAccountAd `json:"data"`
+	Ads struct {
+		Data []StatisticsAccountAd `json:"data"`
+	} `json:"ads"`
 }
 
 type StatisticsAccountAd struct {
@@ -54,17 +50,16 @@ type StatisticsAccountAd struct {
 	EffectiveStatus string `json:"effective_status"`
 	Status          string `json:"status"`
 
-	Insights StatisticsAccountAdInsights `json:"insights"`
-}
-
-type StatisticsAccountAdInsights struct {
-	Data []StatisticsAccountAdInsight `json:"data"`
+	Insights struct {
+		Data []StatisticsAccountAdInsight `json:"data"`
+	} `json:"insights"`
 }
 
 type StatisticsAccountAdInsight struct {
-	Impressions int     `json:"impressions"`
-	Clicks      int     `json:"clicks"`
-	Spend       float64 `json:"spend"`
+	Impressions int       `json:"impressions"`
+	Clicks      int       `json:"clicks"`
+	Spend       float64   `json:"spend"`
+	Date        time.Time `json:"date_start"`
 }
 
 func (a *StatisticsAccountAdInsight) UnmarshalJSON(data []byte) error {
@@ -72,6 +67,7 @@ func (a *StatisticsAccountAdInsight) UnmarshalJSON(data []byte) error {
 		Impressions string `json:"impressions"`
 		Clicks      string `json:"clicks"`
 		Spend       string `json:"spend"`
+		Date        string `json:"date_start"`
 	}
 
 	aux := &auxStatisticsAccountAdInsight{}
@@ -106,21 +102,31 @@ func (a *StatisticsAccountAdInsight) UnmarshalJSON(data []byte) error {
 		a.Spend = spend
 	}
 
+	if aux.Date != "" {
+		date, err := time.Parse("2006-01-02", aux.Date)
+		if err != nil {
+			return err
+		}
+
+		a.Date = date
+	}
+
 	return nil
 }
 
-func (c *Client) GetStatistics(account int, day time.Time) (*StatisticsResponse, error) {
-	date := day.Format("2006-01-02")
+func (c *Client) GetStatistics(account int, start, end time.Time) (*StatisticsResponse, error) {
+	end_date := end.Format("2006-01-02")
+	start_date := start.Format("2006-01-02")
 
-	u := fmt.Sprintf("%s/api/get-statistics?key=%s&account=%d&dates=%s+-+%s",
-		host, c.APIKey, account, date, date)
+	url := "https://fbtool.pro/api/get-statistics?key=%s&account=%d&dates=%s+-+%s&byDay=1"
+	reqURL := fmt.Sprintf(url, c.APIKey, account, start_date, end_date)
 
-	req, err := http.NewRequest("GET", u, nil)
+	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -144,8 +150,7 @@ func (c *Client) GetStatistics(account int, day time.Time) (*StatisticsResponse,
 	return res, nil
 }
 
-type AccountsResponse struct {
-}
+type AccountsResponse struct{}
 
 type Account struct {
 	ID   int    `json:"id"`
@@ -175,14 +180,15 @@ func (a *Account) UnmarshalJSON(data []byte) error {
 }
 
 func (c *Client) GetAccounts() (map[string]*Account, error) {
-	u := fmt.Sprintf("%s/api/get-accounts?key=%s", host, c.APIKey)
+	url := "https://fbtool.pro/api/get-accounts?key=%s"
+	reqURL := fmt.Sprintf(url, c.APIKey)
 
-	req, err := http.NewRequest("GET", u, nil)
+	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

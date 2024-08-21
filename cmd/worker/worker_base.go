@@ -10,9 +10,5 @@ type Worker struct {
 }
 
 func NewWorker(pg *pgsql.PGSQLClient, cfg *Config) *Worker {
-	return &Worker{
-		pg: pg,
-
-		cfg: cfg,
-	}
+	return &Worker{pg: pg, cfg: cfg}
 }

@@ -26,7 +26,7 @@ type FBToolAccount struct {
 	FetchedAt time.Time `json:"fetched_at" db:"fetched_at"`
 }
 
-type FbToolCampaignStat struct {
+type FBToolCampaignStat struct {
 	ID int `json:"id" db:"id"`
 
 	FBToolAccountID int `json:"fbtool_account_id" db:"fbtool_account_id"`
