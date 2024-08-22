@@ -87,6 +87,17 @@ func (c *PGSQLClient) UpdateFBToolTokenFetchedAt(id int) error {
 	return nil
 }
 
+func (c *PGSQLClient) UpdateFBToolTokenDaysToFetch(id int) error {
+	sess := c.GetSession()
+
+	q := `update fbtool_tokens set days_to_fetch = 2 where id = ?`
+	if _, err := sess.UpdateBySql(q, id).Exec(); err != nil {
+		return fmt.Errorf("failed to update fbtool token days_to_fetch: %w", err)
+	}
+
+	return nil
+}
+
 func (c *PGSQLClient) UpdateFBToolAccountFetchedAt(aid int) error {
 	sess := c.GetSession()
 

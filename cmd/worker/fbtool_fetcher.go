@@ -23,12 +23,15 @@ func (w *Worker) fbtoolFetcher() error {
 	for _, token := range tokens {
 		log.Info("fetching fbtool accounts", zap.String("token", token.Token))
 
+		if err := w.fbtoolFetchAccounts(token); err != nil {
+			return fmt.Errorf("failed to fetch fbtool accounts: %w", err)
+		}
+
 		if err := w.pg.UpdateFBToolTokenFetchedAt(token.ID); err != nil {
 			return fmt.Errorf("failed to update fbtool token fetched_at: %w", err)
 		}
-
-		if err := w.fbtoolFetchAccounts(token); err != nil {
-			return fmt.Errorf("failed to fetch fbtool accounts: %w", err)
+		if err := w.pg.UpdateFBToolTokenDaysToFetch(token.ID); err != nil {
+			return fmt.Errorf("failed to update days to fetch: %w", err)
 		}
 	}
 
