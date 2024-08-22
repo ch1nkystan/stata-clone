@@ -102,7 +102,7 @@ func (c *PGSQLClient) UpdateFBToolAccountFetchedAt(aid int, fetched bool, fd int
 	sess := c.GetSession()
 
 	q := `update fbtool_accounts set fetched_at = now(), fetched = ?, fetch_duration = ? where fbtool_account_id = ?`
-	if _, err := sess.UpdateBySql(q, aid, fetched, fd).Exec(); err != nil {
+	if _, err := sess.UpdateBySql(q, fetched, fd, aid).Exec(); err != nil {
 		return fmt.Errorf("failed to update fbtool account fetched_at: %w", err)
 	}
 
