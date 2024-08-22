@@ -56,6 +56,7 @@ func (w *Worker) fbtoolFetchAccounts(token *types.FBToolToken) error {
 				TokenID:           token.ID,
 				FBToolAccountID:   account.ID,
 				FBToolAccountName: account.Name,
+				FetchedAt:         time.Now().AddDate(0, 0, -1),
 			},
 		); err != nil && !errors.Is(err, pgsql.ErrAlreadyExists) {
 			log.Error("failed to create fbtool account", zap.Error(err))

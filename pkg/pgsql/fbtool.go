@@ -15,6 +15,7 @@ func (c *PGSQLClient) CreateFBToolAccount(record *types.FBToolAccount) error {
 			"token_id",
 			"fbtool_account_id",
 			"fbtool_account_name",
+			"fetched_at",
 		).Record(record).Exec(); err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" {
