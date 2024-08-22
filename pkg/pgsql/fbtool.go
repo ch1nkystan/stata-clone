@@ -31,7 +31,7 @@ func (c *PGSQLClient) CreateFBToolAccount(record *types.FBToolAccount) error {
 func (c *PGSQLClient) SelectUnfetchedFBToolTokens() ([]*types.FBToolToken, error) {
 	sess := c.GetSession()
 
-	q := `select * from fbtool_tokens where active = true and fetched_at < now() - interval '6 hour'`
+	q := `select * from fbtool_tokens where active = true and fetched_at < now() - interval '6 hour' order by random() limit 1;`
 
 	res := make([]*types.FBToolToken, 0)
 	if _, err := sess.SelectBySql(q).Load(&res); err != nil {
