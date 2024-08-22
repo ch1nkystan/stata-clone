@@ -98,11 +98,11 @@ func (c *PGSQLClient) UpdateFBToolTokenDaysToFetch(id int) error {
 	return nil
 }
 
-func (c *PGSQLClient) UpdateFBToolAccountFetchedAt(aid int) error {
+func (c *PGSQLClient) UpdateFBToolAccountFetchedAt(aid int, fetched bool, fd int) error {
 	sess := c.GetSession()
 
-	q := `update fbtool_accounts set fetched_at = now() where fbtool_account_id = ?`
-	if _, err := sess.UpdateBySql(q, aid).Exec(); err != nil {
+	q := `update fbtool_accounts set fetched_at = now(), fetched = ?, fetch_duration = ? where fbtool_account_id = ?`
+	if _, err := sess.UpdateBySql(q, aid, fetched, fd).Exec(); err != nil {
 		return fmt.Errorf("failed to update fbtool account fetched_at: %w", err)
 	}
 

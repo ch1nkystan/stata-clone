@@ -85,16 +85,17 @@ func (w *Worker) fbtoolFetchAccountStats(fc *fbtool.Client, account *types.FBToo
 	end := now.AddDate(0, 0, -1)
 	start := now.AddDate(0, 0, -daysToFetch)
 
+	fetched := false
+	startedAt := time.Now()
+	if err := w.pg.UpdateFBToolAccountFetchedAt(account.FBToolAccountID, fetched, 0); err != nil {
+		return fmt.Errorf("failed to update fbtool account fetched_at: %w", err)
+	}
+
 	stats, err := fc.GetStatistics(account.FBToolAccountID, start, end)
 	if err != nil {
 		return fmt.Errorf("failed to get statistics: %w", err)
 	}
 
-	if err := w.pg.UpdateFBToolAccountFetchedAt(account.FBToolAccountID); err != nil {
-		return fmt.Errorf("failed to update fbtool account fetched_at: %w", err)
-	}
-
-	fetched := false
 	for _, stat := range stats.Data {
 		for _, ad := range stat.Ads.Data {
 
@@ -126,7 +127,12 @@ func (w *Worker) fbtoolFetchAccountStats(fc *fbtool.Client, account *types.FBToo
 		}
 	}
 
-	log.Info("fetched fbtool account stats", zap.Bool("fetched", fetched))
+	duration := int(time.Since(startedAt).Seconds())
+	if err := w.pg.UpdateFBToolAccountFetchedAt(account.FBToolAccountID, fetched, duration); err != nil {
+		return fmt.Errorf("failed to update fbtool account fetched_at: %w", err)
+	}
+
+	log.Info("fetched fbtool account stats", zap.Bool("fetched", fetched), zap.Int("duration", duration))
 
 	return nil
 }

@@ -8,6 +8,8 @@ create table if not exists fbtool_accounts
     fbtool_account_name varchar(255) default ''    not null,
 
     active              boolean      default true  not null,
+    fetched             boolean      default true  not null,
+    fetch_duration      int          default 0     not null,
 
     created_at          timestamp    default now() not null,
     fetched_at          timestamp    default now() not null
