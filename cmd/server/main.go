@@ -52,7 +52,7 @@ func main() {
 	}
 
 	log.Info("loading pgsql client...")
-	pg := pgsql.NewPGSQLClient(conn)
+	pg := pgsql.NewClient(conn)
 
 	log.Info("loading depot client...")
 	dc := depot.NewClient(&depot.Config{

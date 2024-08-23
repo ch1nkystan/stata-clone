@@ -4,7 +4,7 @@ import (
 	"github.com/prosperofair/stata/pkg/types"
 )
 
-func (c *PGSQLClient) CreateDeeplink(deeplink *types.Deeplink) error {
+func (c *Client) CreateDeeplink(deeplink *types.Deeplink) error {
 	sess := c.GetSession()
 
 	if _, err := sess.InsertInto("deeplinks").
@@ -20,7 +20,7 @@ func (c *PGSQLClient) CreateDeeplink(deeplink *types.Deeplink) error {
 	return nil
 }
 
-func (c *PGSQLClient) SelectBotDeeplinks(botID int) ([]*types.Deeplink, error) {
+func (c *Client) SelectBotDeeplinks(botID int) ([]*types.Deeplink, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.Deeplink, 0)
@@ -33,7 +33,7 @@ func (c *PGSQLClient) SelectBotDeeplinks(botID int) ([]*types.Deeplink, error) {
 	return res, nil
 }
 
-func (c *PGSQLClient) UpdateDeeplinkLabel(botID int, hash, label string) error {
+func (c *Client) UpdateDeeplinkLabel(botID int, hash, label string) error {
 	sess := c.GetSession()
 
 	q := `update deeplinks set label = ? where bot_id = ? and hash = ?`
@@ -44,7 +44,7 @@ func (c *PGSQLClient) UpdateDeeplinkLabel(botID int, hash, label string) error {
 	return nil
 }
 
-func (c *PGSQLClient) SelectBotDeeplinksByHash(botID int, hash string) ([]*types.Deeplink, error) {
+func (c *Client) SelectBotDeeplinksByHash(botID int, hash string) ([]*types.Deeplink, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.Deeplink, 0)
@@ -57,7 +57,7 @@ func (c *PGSQLClient) SelectBotDeeplinksByHash(botID int, hash string) ([]*types
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectBotDeeplinksByReferralID(botID int, referralID int64) ([]*types.Deeplink, error) {
+func (c *Client) SelectBotDeeplinksByReferralID(botID int, referralID int64) ([]*types.Deeplink, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.Deeplink, 0)
@@ -70,7 +70,7 @@ func (c *PGSQLClient) SelectBotDeeplinksByReferralID(botID int, referralID int64
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectBotDeeplinksByLabel(botID int, label string) ([]*types.Deeplink, error) {
+func (c *Client) SelectBotDeeplinksByLabel(botID int, label string) ([]*types.Deeplink, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.Deeplink, 0)

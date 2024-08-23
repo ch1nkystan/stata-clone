@@ -158,31 +158,6 @@ type depositsLogResponse struct {
 	Data []*types.DepositRow `json:"data"`
 }
 
-func (s *Server) usersRecapHandler(c *fiber.Ctx) error {
-	req := &dateRangeRequest{}
-	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
-	}
-
-	if err := req.validate(); err != nil {
-		return s.BadRequest(c, err)
-	}
-
-	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
-	if err != nil {
-		return s.InternalServerError(c, err)
-	}
-
-	recap, err := s.deps.PG.SelectUsersRecap(bot.ID)
-	if err != nil {
-		return s.InternalServerError(c, err)
-	}
-
-	recap.UniqueRate = float64(recap.UsersUnique) / float64(recap.UsersTotal) * 100
-
-	return c.JSON(recap)
-}
-
 type MetricsResponse struct {
 	Data map[string]*types.MetricRow `json:"data"`
 }
@@ -197,7 +172,7 @@ func (s *Server) metricsHandler(c *fiber.Ctx) error {
 		return s.BadRequest(c, err)
 	}
 
-	_, err := s.deps.PG.SelectBotByToken(req.BotToken)
+	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
 	if err != nil {
 		return s.InternalServerError(c, err)
 	}
@@ -206,11 +181,12 @@ func (s *Server) metricsHandler(c *fiber.Ctx) error {
 		Data: make(map[string]*types.MetricRow),
 	}
 
-	res.Data["users"] = &types.MetricRow{
-		AllTime: 1000,
-		Period:  10,
-		Diff:    10.25,
+	users, err := s.deps.PG.SelectUsersMetric(bot.ID, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
 	}
+
+	res.Data["users"] = users
 
 	res.Data["users_uniq"] = &types.MetricRow{
 		AllTime: 95.00,

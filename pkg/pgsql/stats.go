@@ -15,7 +15,7 @@ type UsersCountStats struct {
 	Fail             int    `db:"fail"`
 }
 
-func (c *PGSQLClient) SelectUsersCountStats() ([]*UsersCountStats, error) {
+func (c *Client) SelectUsersCountStats() ([]*UsersCountStats, error) {
 	sess := c.GetSession()
 	res := make([]*UsersCountStats, 0)
 
@@ -34,7 +34,7 @@ group by bot_id;`
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectBotMailingStats(botID int) ([]*UsersCountStats, error) {
+func (c *Client) SelectBotMailingStats(botID int) ([]*UsersCountStats, error) {
 	sess := c.GetSession()
 	res := make([]*UsersCountStats, 0)
 
@@ -54,7 +54,7 @@ group by depot_channel_hash;`
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectBotUsersByDay(botID int, start, end time.Time) (map[string]*types.ConversionRow, error) {
+func (c *Client) SelectBotUsersByDay(botID int, start, end time.Time) (map[string]*types.ConversionRow, error) {
 	sess := c.GetSession()
 	res := make(map[string]*types.ConversionRow, 0)
 	conversions := make([]*types.ConversionRow, 0)
@@ -99,7 +99,7 @@ from cte;`
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectBotUsersWithDeeplinksByDay(botID int, start, end time.Time) ([]*types.ConversionRow, error) {
+func (c *Client) SelectBotUsersWithDeeplinksByDay(botID int, start, end time.Time) ([]*types.ConversionRow, error) {
 	sess := c.GetSession()
 
 	conversions := make([]*types.ConversionRow, 0)
@@ -128,7 +128,7 @@ from cte;`
 	return conversions, nil
 }
 
-func (c *PGSQLClient) SelectBotLeadsByDay(botID int, start, end time.Time) (map[string]*types.ConversionRow, error) {
+func (c *Client) SelectBotLeadsByDay(botID int, start, end time.Time) (map[string]*types.ConversionRow, error) {
 	sess := c.GetSession()
 	res := make(map[string]*types.ConversionRow, 0)
 	conversions := make([]*types.ConversionRow, 0)
@@ -182,7 +182,7 @@ from cte;`
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectBotLeadsWithDeeplinksByDay(botID int, start, end time.Time) ([]*types.ConversionRow, error) {
+func (c *Client) SelectBotLeadsWithDeeplinksByDay(botID int, start, end time.Time) ([]*types.ConversionRow, error) {
 	sess := c.GetSession()
 
 	conversions := make([]*types.ConversionRow, 0)
@@ -216,7 +216,7 @@ from cte;`
 	return conversions, nil
 }
 
-func (c *PGSQLClient) SelectDepositsByBotID(botID int, start, end time.Time) ([]*types.DepositRow, error) {
+func (c *Client) SelectDepositsByBotID(botID int, start, end time.Time) ([]*types.DepositRow, error) {
 	sess := c.GetSession()
 	res := make([]*types.DepositRow, 0)
 
@@ -243,15 +243,25 @@ order by tx.created_at desc;`
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectUsersRecap(botID int) (*types.UsersRecap, error) {
+func (c *Client) SelectUsersMetric(botID int, start, end time.Time) (*types.MetricRow, error) {
 	sess := c.GetSession()
-	res := &types.UsersRecap{}
+	res := &types.MetricRow{}
 
-	q := `select count(*) as users_total, sum(case when u.seen > 0 then 0 else 1 end) as users_unique
-from users u
-where bot_id = ?`
+	q := `with cte as (select count(*)                                                                 as total,
+	                    sum(case when created_at >= ? and created_at <= ? then 1 else 0 end) as current_period,
+	                    sum(case when created_at >= ? and created_at <= ? then 1 else 0 end) as last_period
+	             from users
+	             where mailing_state = 'ready'
+	               and bot_id = ?)
+	select total, current_period, last_period, float4(current_period) / float4(last_period) * 100 - 100 as diff
+	from cte;`
 
-	if err := sess.SelectBySql(q, botID).LoadOne(res); err != nil {
+	// substract end from start to get the period
+	diff := end.Sub(start)
+	startPrev := start.Add(-diff)
+	endPrev := end.Add(-diff)
+
+	if _, err := sess.SelectBySql(q, botID, start, end, startPrev, endPrev).Load(&res); err != nil {
 		return nil, err
 	}
 

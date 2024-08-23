@@ -2,7 +2,7 @@ package pgsql
 
 import "github.com/prosperofair/stata/pkg/types"
 
-func (c *PGSQLClient) CreateEventLog(el *types.EventsLog) error {
+func (c *Client) CreateEventLog(el *types.EventsLog) error {
 	sess := c.GetSession()
 
 	if _, err := sess.InsertInto("events_log").

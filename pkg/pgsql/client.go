@@ -8,16 +8,16 @@ import (
 
 var ErrAlreadyExists = errors.New("err_already_exists")
 
-type PGSQLClient struct {
+type Client struct {
 	pgdb *dbr.Connection
 }
 
-func NewPGSQLClient(conn *dbr.Connection) *PGSQLClient {
-	return &PGSQLClient{
+func NewClient(conn *dbr.Connection) *Client {
+	return &Client{
 		pgdb: conn,
 	}
 }
 
-func (c *PGSQLClient) GetSession() *dbr.Session {
+func (c *Client) GetSession() *dbr.Session {
 	return c.pgdb.NewSession(nil)
 }

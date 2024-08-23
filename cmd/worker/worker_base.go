@@ -5,10 +5,10 @@ import (
 )
 
 type Worker struct {
-	pg  *pgsql.PGSQLClient
+	pg  *pgsql.Client
 	cfg *Config
 }
 
-func NewWorker(pg *pgsql.PGSQLClient, cfg *Config) *Worker {
+func NewWorker(pg *pgsql.Client, cfg *Config) *Worker {
 	return &Worker{pg: pg, cfg: cfg}
 }

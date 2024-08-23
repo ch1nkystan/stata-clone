@@ -9,7 +9,7 @@ import (
 	"github.com/prosperofair/stata/pkg/types"
 )
 
-func (c *PGSQLClient) SelectUserByID(id int) (*types.User, error) {
+func (c *Client) SelectUserByID(id int) (*types.User, error) {
 	sess := c.GetSession()
 
 	res := &types.User{}
@@ -22,7 +22,7 @@ func (c *PGSQLClient) SelectUserByID(id int) (*types.User, error) {
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectUsersByTelegramID(tid int64) ([]*types.User, error) {
+func (c *Client) SelectUsersByTelegramID(tid int64) ([]*types.User, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.User, 0)
@@ -35,7 +35,7 @@ func (c *PGSQLClient) SelectUsersByTelegramID(tid int64) ([]*types.User, error) 
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectBotUsersByTelegramID(bid int, tid int64) ([]*types.User, error) {
+func (c *Client) SelectBotUsersByTelegramID(bid int, tid int64) ([]*types.User, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.User, 0)
@@ -48,7 +48,7 @@ func (c *PGSQLClient) SelectBotUsersByTelegramID(bid int, tid int64) ([]*types.U
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectUsersWithoutDeeplinkID(limit int) ([]*types.User, error) {
+func (c *Client) SelectUsersWithoutDeeplinkID(limit int) ([]*types.User, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.User, 0)
@@ -61,7 +61,7 @@ func (c *PGSQLClient) SelectUsersWithoutDeeplinkID(limit int) ([]*types.User, er
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectAllUsersWithEmptyCreationEvent() ([]*types.User, error) {
+func (c *Client) SelectAllUsersWithEmptyCreationEvent() ([]*types.User, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.User, 0)
@@ -74,7 +74,7 @@ func (c *PGSQLClient) SelectAllUsersWithEmptyCreationEvent() ([]*types.User, err
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectUsersByForwardSenderName(fsn string) ([]*types.User, error) {
+func (c *Client) SelectUsersByForwardSenderName(fsn string) ([]*types.User, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.User, 0)
@@ -87,7 +87,7 @@ func (c *PGSQLClient) SelectUsersByForwardSenderName(fsn string) ([]*types.User,
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectUsersByUsername(username string) ([]*types.User, error) {
+func (c *Client) SelectUsersByUsername(username string) ([]*types.User, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.User, 0)
@@ -99,7 +99,7 @@ func (c *PGSQLClient) SelectUsersByUsername(username string) ([]*types.User, err
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectRandomReadyUsersByDepotChannelHash(botID int, hash string, limit int) ([]*types.User, error) {
+func (c *Client) SelectRandomReadyUsersByDepotChannelHash(botID int, hash string, limit int) ([]*types.User, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.User, 0)
@@ -111,7 +111,7 @@ func (c *PGSQLClient) SelectRandomReadyUsersByDepotChannelHash(botID int, hash s
 	return res, nil
 }
 
-func (c *PGSQLClient) UpdateUsersMailingState(state string, ids []int) error {
+func (c *Client) UpdateUsersMailingState(state string, ids []int) error {
 	sess := c.GetSession()
 
 	q := `update users set mailing_state = ?, mailing_state_updated_at = now() where id = any (?)`
@@ -122,7 +122,7 @@ func (c *PGSQLClient) UpdateUsersMailingState(state string, ids []int) error {
 	return nil
 }
 
-func (c *PGSQLClient) SetBotUsersMailingStatesReady(botID int, hash string) error {
+func (c *Client) SetBotUsersMailingStatesReady(botID int, hash string) error {
 	sess := c.GetSession()
 
 	states := []string{types.UserMailingStateInProgress, types.UserMailingStateFinished}
@@ -145,7 +145,7 @@ func (c *PGSQLClient) SetBotUsersMailingStatesReady(botID int, hash string) erro
 	return nil
 }
 
-func (c *PGSQLClient) UpdateBotUsersSetDefaultChannel(botID int, hash string, tgchid int64, tgchurl string) error {
+func (c *Client) UpdateBotUsersSetDefaultChannel(botID int, hash string, tgchid int64, tgchurl string) error {
 	sess := c.GetSession()
 
 	q := `update users
@@ -163,7 +163,7 @@ func (c *PGSQLClient) UpdateBotUsersSetDefaultChannel(botID int, hash string, tg
 	return nil
 }
 
-func (c *PGSQLClient) UpdateBotUsersTelegramChannel(botID int, hash string, tgchid int64, tgchurl string) error {
+func (c *Client) UpdateBotUsersTelegramChannel(botID int, hash string, tgchid int64, tgchurl string) error {
 	sess := c.GetSession()
 
 	q := `update users
@@ -178,7 +178,7 @@ func (c *PGSQLClient) UpdateBotUsersTelegramChannel(botID int, hash string, tgch
 	return nil
 }
 
-func (c *PGSQLClient) UpdateBotUserTelegramChannel(userID int, hash string, tgchid int64, tgchurl string) error {
+func (c *Client) UpdateBotUserTelegramChannel(userID int, hash string, tgchid int64, tgchurl string) error {
 	sess := c.GetSession()
 
 	q := `update users
@@ -193,7 +193,7 @@ func (c *PGSQLClient) UpdateBotUserTelegramChannel(userID int, hash string, tgch
 	return nil
 }
 
-func (c *PGSQLClient) UpdateBotUserMailingState(botToken string, telegramID int64, state string) error {
+func (c *Client) UpdateBotUserMailingState(botToken string, telegramID int64, state string) error {
 	sess := c.GetSession()
 
 	if state == types.UserMailingStateBlocked {
@@ -225,7 +225,7 @@ where bot_id = (select id from bots where bot_token = ?)
 	return nil
 }
 
-func (c *PGSQLClient) CreateUser(user *types.User) error {
+func (c *Client) CreateUser(user *types.User) error {
 	sess := c.GetSession()
 
 	if _, err := sess.InsertInto("users").
@@ -253,7 +253,7 @@ func (c *PGSQLClient) CreateUser(user *types.User) error {
 	return nil
 }
 
-func (c *PGSQLClient) UpdateUserOnMessage(old, new *types.User) error {
+func (c *Client) UpdateUserOnMessage(old, new *types.User) error {
 	sess := c.GetSession()
 
 	updated := false
@@ -317,7 +317,7 @@ func (c *PGSQLClient) UpdateUserOnMessage(old, new *types.User) error {
 	return nil
 }
 
-func (c *PGSQLClient) UpdateUserDeeplink(uid, did int) error {
+func (c *Client) UpdateUserDeeplink(uid, did int) error {
 	sess := c.GetSession()
 
 	q := `update users set deeplink_id = ? where id = ?`
@@ -328,7 +328,7 @@ func (c *PGSQLClient) UpdateUserDeeplink(uid, did int) error {
 	return nil
 }
 
-func (c *PGSQLClient) UpdateUserDeeplinkAndCreatedAt(uid, did int, createdAt time.Time) error {
+func (c *Client) UpdateUserDeeplinkAndCreatedAt(uid, did int, createdAt time.Time) error {
 	sess := c.GetSession()
 
 	q := `update users set deeplink_id = ?, created_at = ?, event_created = 'register' where id = ?`
@@ -339,7 +339,7 @@ func (c *PGSQLClient) UpdateUserDeeplinkAndCreatedAt(uid, did int, createdAt tim
 	return nil
 }
 
-func (c *PGSQLClient) UpdateUserDepositState(id int) error {
+func (c *Client) UpdateUserDepositState(id int) error {
 	sess := c.GetSession()
 
 	q := `update users set deposited = true, deposited_at = now() where id = ? and deposited = false`

@@ -9,13 +9,13 @@ import (
 )
 
 type Migrator struct {
-	old       *PGSQLClient
-	new       *pgsql.PGSQLClient
+	old       *Client
+	new       *pgsql.Client
 	chunkSize int
 	dryRun    bool
 }
 
-func NewMigrator(new *pgsql.PGSQLClient, old *PGSQLClient, cz int, dryRun bool) *Migrator {
+func NewMigrator(new *pgsql.Client, old *Client, cz int, dryRun bool) *Migrator {
 	return &Migrator{
 		new:       new,
 		old:       old,

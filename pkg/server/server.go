@@ -32,7 +32,7 @@ type Config struct {
 }
 
 type Deps struct {
-	PG *pgsql.PGSQLClient
+	PG *pgsql.Client
 
 	Depot *depot.Client
 }

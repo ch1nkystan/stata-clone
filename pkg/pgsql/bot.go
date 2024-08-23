@@ -4,7 +4,7 @@ import (
 	"github.com/prosperofair/stata/pkg/types"
 )
 
-func (c *PGSQLClient) SelectBotByToken(token string) (*types.Bot, error) {
+func (c *Client) SelectBotByToken(token string) (*types.Bot, error) {
 	sess := c.GetSession()
 
 	res := &types.Bot{}
@@ -17,7 +17,7 @@ func (c *PGSQLClient) SelectBotByToken(token string) (*types.Bot, error) {
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectAllBots() (map[int]*types.Bot, error) {
+func (c *Client) SelectAllBots() (map[int]*types.Bot, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.Bot, 0)
@@ -35,7 +35,7 @@ func (c *PGSQLClient) SelectAllBots() (map[int]*types.Bot, error) {
 	return bots, nil
 }
 
-func (c *PGSQLClient) SelectBotByID(id int) (*types.Bot, error) {
+func (c *Client) SelectBotByID(id int) (*types.Bot, error) {
 	sess := c.GetSession()
 
 	res := &types.Bot{}
@@ -48,7 +48,7 @@ func (c *PGSQLClient) SelectBotByID(id int) (*types.Bot, error) {
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectBotByUsername(username string) (*types.Bot, error) {
+func (c *Client) SelectBotByUsername(username string) (*types.Bot, error) {
 	sess := c.GetSession()
 
 	res := &types.Bot{}
@@ -61,7 +61,7 @@ func (c *PGSQLClient) SelectBotByUsername(username string) (*types.Bot, error) {
 	return res, nil
 }
 
-func (c *PGSQLClient) CreateBot(bot *types.Bot) error {
+func (c *Client) CreateBot(bot *types.Bot) error {
 	sess := c.GetSession()
 
 	if _, err := sess.InsertInto("bots").
@@ -79,7 +79,7 @@ func (c *PGSQLClient) CreateBot(bot *types.Bot) error {
 	return nil
 }
 
-func (c *PGSQLClient) UpdateBotBuyerID(botToken string, bid string) error {
+func (c *Client) UpdateBotBuyerID(botToken string, bid string) error {
 	sess := c.GetSession()
 
 	if _, err := sess.Update("bots").

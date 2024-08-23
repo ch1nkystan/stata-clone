@@ -16,7 +16,7 @@ import (
 
 type Ticker struct {
 	HTTPClient *http.Client
-	pg         *pgsql.PGSQLClient
+	pg         *pgsql.Client
 
 	tick   time.Duration
 	aid    int
@@ -25,7 +25,7 @@ type Ticker struct {
 	dryRun bool
 }
 
-func NewTicker(pg *pgsql.PGSQLClient, symbol string, tick time.Duration, dryRun bool) *Ticker {
+func NewTicker(pg *pgsql.Client, symbol string, tick time.Duration, dryRun bool) *Ticker {
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/prosperofair/stata/pkg/types"
 )
 
-func (c *PGSQLClient) CreateFBToolAccount(record *types.FBToolAccount) error {
+func (c *Client) CreateFBToolAccount(record *types.FBToolAccount) error {
 	sess := c.GetSession()
 
 	if _, err := sess.InsertInto("fbtool_accounts").
@@ -28,7 +28,7 @@ func (c *PGSQLClient) CreateFBToolAccount(record *types.FBToolAccount) error {
 	return nil
 }
 
-func (c *PGSQLClient) SelectUnfetchedFBToolTokens() ([]*types.FBToolToken, error) {
+func (c *Client) SelectUnfetchedFBToolTokens() ([]*types.FBToolToken, error) {
 	sess := c.GetSession()
 
 	q := `select * from fbtool_tokens where active = true and fetched_at < now() - interval '6 hour' order by random() limit 1;`
@@ -41,7 +41,7 @@ func (c *PGSQLClient) SelectUnfetchedFBToolTokens() ([]*types.FBToolToken, error
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectUnfetchedFBToolAccounts(tokenID int) ([]*types.FBToolAccount, error) {
+func (c *Client) SelectUnfetchedFBToolAccounts(tokenID int) ([]*types.FBToolAccount, error) {
 	sess := c.GetSession()
 
 	q := `select * from fbtool_accounts where active = true and token_id = ? and fetched_at < now() - interval '1 day' and fetch_duration < 25`
@@ -59,7 +59,7 @@ func (c *PGSQLClient) SelectUnfetchedFBToolAccounts(tokenID int) ([]*types.FBToo
 // 	Date       time.Time `db:"date"`
 // }
 
-// func (c *PGSQLClient) SelectFBToolCampaignStatsRecordsByDay(accountID, daysToFetch int) ([]*FBToolCampaignStatRecord, error) {
+// func (c *Client) SelectFBToolCampaignStatsRecordsByDay(accountID, daysToFetch int) ([]*FBToolCampaignStatRecord, error) {
 // 	sess := c.GetSession()
 
 // 	q := `
@@ -77,7 +77,7 @@ func (c *PGSQLClient) SelectUnfetchedFBToolAccounts(tokenID int) ([]*types.FBToo
 // 	return res, nil
 // }
 
-func (c *PGSQLClient) UpdateFBToolTokenFetchedAt(id int) error {
+func (c *Client) UpdateFBToolTokenFetchedAt(id int) error {
 	sess := c.GetSession()
 
 	q := `update fbtool_tokens set fetched_at = now() where id = ?`
@@ -88,7 +88,7 @@ func (c *PGSQLClient) UpdateFBToolTokenFetchedAt(id int) error {
 	return nil
 }
 
-func (c *PGSQLClient) UpdateFBToolTokenDaysToFetch(id int) error {
+func (c *Client) UpdateFBToolTokenDaysToFetch(id int) error {
 	sess := c.GetSession()
 
 	q := `update fbtool_tokens set days_to_fetch = 2 where id = ?`
@@ -99,7 +99,7 @@ func (c *PGSQLClient) UpdateFBToolTokenDaysToFetch(id int) error {
 	return nil
 }
 
-func (c *PGSQLClient) UpdateFBToolAccountFetchedAt(aid int, fetched bool, fd int) error {
+func (c *Client) UpdateFBToolAccountFetchedAt(aid int, fetched bool, fd int) error {
 	sess := c.GetSession()
 
 	q := `update fbtool_accounts set fetched_at = now(), fetched = ?, fetch_duration = ? where fbtool_account_id = ?`
@@ -110,7 +110,7 @@ func (c *PGSQLClient) UpdateFBToolAccountFetchedAt(aid int, fetched bool, fd int
 	return nil
 }
 
-// func (c *PGSQLClient) DisableFBToolAccount(aid int) error {
+// func (c *Client) DisableFBToolAccount(aid int) error {
 // 	sess := c.GetSession()
 
 // 	q := `update fbtool_accounts set active = false where fbtool_account_id = ?`
@@ -121,7 +121,7 @@ func (c *PGSQLClient) UpdateFBToolAccountFetchedAt(aid int, fetched bool, fd int
 // 	return nil
 // }
 
-func (c *PGSQLClient) CreateFBToolCampaignStat(record *types.FBToolCampaignStat) error {
+func (c *Client) CreateFBToolCampaignStat(record *types.FBToolCampaignStat) error {
 	sess := c.GetSession()
 
 	if _, err := sess.InsertInto("fbtool_campaigns_stats").

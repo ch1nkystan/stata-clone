@@ -41,7 +41,7 @@ func main() {
 	}
 
 	log.Info("loading pgsql client...")
-	new := pgsql.NewPGSQLClient(conn)
+	new := pgsql.NewClient(conn)
 
 	conn2, err := createSourcePostgresConnection(cfg.SourcePostgres)
 	if err != nil {

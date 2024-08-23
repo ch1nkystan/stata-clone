@@ -43,7 +43,7 @@ func main() {
 	}
 
 	log.Info("loading pgsql client...")
-	pg := pgsql.NewPGSQLClient(conn)
+	pg := pgsql.NewClient(conn)
 
 	// select all active assets
 

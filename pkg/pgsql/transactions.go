@@ -4,7 +4,7 @@ import (
 	"github.com/prosperofair/stata/pkg/types"
 )
 
-func (c *PGSQLClient) CreatePrice(price *types.Price) error {
+func (c *Client) CreatePrice(price *types.Price) error {
 	sess := c.GetSession()
 
 	if _, err := sess.InsertInto("prices").
@@ -19,7 +19,7 @@ func (c *PGSQLClient) CreatePrice(price *types.Price) error {
 	return nil
 }
 
-func (c *PGSQLClient) CreateTransaction(tx *types.Transaction) error {
+func (c *Client) CreateTransaction(tx *types.Transaction) error {
 	sess := c.GetSession()
 
 	if _, err := sess.InsertInto("transactions").
@@ -43,7 +43,7 @@ func (c *PGSQLClient) CreateTransaction(tx *types.Transaction) error {
 	return nil
 }
 
-func (c *PGSQLClient) SelectLastPricesByTicker() (map[string]*types.Price, error) {
+func (c *Client) SelectLastPricesByTicker() (map[string]*types.Price, error) {
 	sess := c.GetSession()
 	res := make([]*types.Price, 0)
 

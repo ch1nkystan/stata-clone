@@ -16,21 +16,21 @@ type IncomeInfo struct {
 	CreateAt     time.Time `db:"create_at"`
 }
 
-type PGSQLClient struct {
+type Client struct {
 	pgdb *dbr.Connection
 }
 
-func NewPGSQLClient(conn *dbr.Connection) *PGSQLClient {
-	return &PGSQLClient{
+func NewPGSQLClient(conn *dbr.Connection) *Client {
+	return &Client{
 		pgdb: conn,
 	}
 }
 
-func (c *PGSQLClient) GetSession() *dbr.Session {
+func (c *Client) GetSession() *dbr.Session {
 	return c.pgdb.NewSession(nil)
 }
 
-func (c *PGSQLClient) SelectIncomesInfo(limit int) ([]*IncomeInfo, error) {
+func (c *Client) SelectIncomesInfo(limit int) ([]*IncomeInfo, error) {
 	sess := c.GetSession()
 
 	res := make([]*IncomeInfo, 0)
@@ -43,7 +43,7 @@ func (c *PGSQLClient) SelectIncomesInfo(limit int) ([]*IncomeInfo, error) {
 	return res, nil
 }
 
-func (c *PGSQLClient) SelectIncomesInfoForUser(telegramID int64, botUsername string) ([]*IncomeInfo, error) {
+func (c *Client) SelectIncomesInfoForUser(telegramID int64, botUsername string) ([]*IncomeInfo, error) {
 	sess := c.GetSession()
 
 	res := make([]*IncomeInfo, 0)
