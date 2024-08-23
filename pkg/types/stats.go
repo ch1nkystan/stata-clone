@@ -37,3 +37,9 @@ type UsersRecap struct {
 	UsersUnique int     `db:"users_unique" json:"users_unique"`
 	UniqueRate  float64 `db:"unique_rate" json:"unique_rate"`
 }
+
+type MetricRow struct {
+	AllTime interface{} `db:"all_time" json:"all_time"`
+	Period  interface{} `db:"period" json:"period"`
+	Diff    interface{} `db:"diff" json:"diff"`
+}

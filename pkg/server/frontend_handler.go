@@ -182,3 +182,68 @@ func (s *Server) usersRecapHandler(c *fiber.Ctx) error {
 
 	return c.JSON(recap)
 }
+
+type MetricsResponse struct {
+	Data map[string]*types.MetricRow `json:"data"`
+}
+
+func (s *Server) metricsHandler(c *fiber.Ctx) error {
+	req := &dateRangeRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	if err := req.validate(); err != nil {
+		return s.BadRequest(c, err)
+	}
+
+	_, err := s.deps.PG.SelectBotByToken(req.BotToken)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	res := &MetricsResponse{
+		Data: make(map[string]*types.MetricRow),
+	}
+
+	res.Data["users"] = &types.MetricRow{
+		AllTime: 1000,
+		Period:  10,
+		Diff:    10.25,
+	}
+
+	res.Data["users_uniq"] = &types.MetricRow{
+		AllTime: 95.00,
+		Period:  85.00,
+		Diff:    -10.00,
+	}
+
+	res.Data["leads"] = &types.MetricRow{
+		AllTime: 1000,
+		Period:  100,
+		Diff:    -10.25,
+	}
+
+	res.Data["profit"] = &types.MetricRow{
+		AllTime: 3500,
+		Period:  700,
+		Diff:    10.35,
+	}
+
+	// users, err := s.deps.PG.SelectBotUsersByDay(bot.ID, req.Start, req.End)
+
+	// deposits, err := s.deps.PG.SelectDepositsByBotID(bot.ID, req.Start, req.End)
+	// if err != nil {
+	// 	return s.InternalServerError(c, err)
+	// }
+
+	// for i, d := range deposits {
+	// 	deposits[i].Hash = d.Hash[len(d.Hash)-10:]
+	// }
+
+	// res := &depositsLogResponse{
+	// 	Data: deposits,
+	// }
+
+	return c.JSON(res)
+}

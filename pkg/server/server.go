@@ -102,7 +102,7 @@ func New(cfg *Config, deps *Deps) *Server {
 	f := s.App.Group("/f/api", s.apiMiddlewareFrontend)
 	f.Post("/stats/conversions-by-day", s.conversionsByDayHandler)
 	f.Post("/stats/deposits-log", s.depositsLogHandler)
-	f.Post("/stats/users-recap", s.usersRecapHandler)
+	f.Post("/stats/metrics", s.metricsHandler)
 
 	return s
 }
