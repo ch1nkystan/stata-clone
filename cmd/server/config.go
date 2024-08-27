@@ -20,8 +20,8 @@ type ServerConfig struct {
 	ExposeMetrics bool   `env:"SERVER_EXPOSE_METRICS" envDefault:"true"`
 	Port          string `env:"SERVER_PORT" envDefault:"8080"`
 
-	BackendTokens  []string `env:"SERVER_BACKEND_TOKENS" envDefault:""`
-	FrontendTokens []string `env:"SERVER_FRONTEND_TOKENS" envDefault:""`
+	BackendTokens  []string `env:"SERVER_BACKEND_TOKENS" envDefault:"fcbae6821cb21dd6e2aba928e281e7da"`
+	FrontendTokens []string `env:"SERVER_FRONTEND_TOKENS" envDefault:"0f461a1c7ef387b82694d3014725081c"`
 }
 
 type DepotConfig struct {
@@ -36,10 +36,10 @@ type LoggerConfig struct {
 
 type PostgresConfig struct {
 	Database    string `env:"POSTGRES_DATABASE" envDefault:"stata"`
-	Host        string `env:"POSTGRES_HOST" envDefault:"127.0.0.1"`
-	User        string `env:"POSTGRES_USER" envDefault:"postgres"`
-	Password    string `env:"POSTGRES_PASSWORD" envDefault:"pass"`
-	Port        string `env:"POSTGRES_PORT" envDefault:"5432"`
+	Host        string `env:"POSTGRES_HOST" envDefault:"db-postgresql-drapps-do-user-13508037-0.c.db.ondigitalocean.com"`
+	User        string `env:"POSTGRES_USER" envDefault:"doadmin"`
+	Password    string `env:"POSTGRES_PASSWORD" envDefault:"AVNS_Sh9FTNbSIV4Ma506inv"`
+	Port        string `env:"POSTGRES_PORT" envDefault:"25060"`
 	SSLMode     string `env:"POSTGRES_SSL_MODE" envDefault:"require"`
 	SSLCertPath string `env:"POSTGRES_SSL_CERT_PATH" envDefault:"ca-certificate.crt"`
 }

@@ -16,6 +16,9 @@ type dateRangeRequest struct {
 
 	EndAt string    `json:"end_at"`
 	End   time.Time `json:"-"`
+
+	StartPrev time.Time `json:"-"`
+	EndPrev   time.Time `json:"-"`
 }
 
 func (req *dateRangeRequest) validate() error {
@@ -35,11 +38,28 @@ func (req *dateRangeRequest) validate() error {
 		eat = time.Now()
 	}
 
-	if eat.After(time.Now()) {
-		eat = time.Now()
+	if eat.After(time.Now().Add(time.Hour * 24)) {
+		eat = time.Now().Add(time.Hour * 24)
 	}
 
 	req.End = eat
+
+	// substract end from start to get the period
+	diff := req.End.Sub(req.Start)
+
+	if diff <= 0 {
+		diff = time.Hour * 24
+		req.End = req.Start.Add(diff)
+	}
+
+	req.StartPrev = req.Start.Add(-diff)
+	req.EndPrev = req.End.Add(-diff)
+
+	// convert to date only
+	req.Start = req.Start.Truncate(time.Hour * 24)
+	req.End = req.End.Truncate(time.Hour * 24)
+	req.StartPrev = req.StartPrev.Truncate(time.Hour * 24)
+	req.EndPrev = req.EndPrev.Truncate(time.Hour * 24)
 
 	return nil
 }
@@ -158,8 +178,18 @@ type depositsLogResponse struct {
 	Data []*types.DepositRow `json:"data"`
 }
 
-type MetricsResponse struct {
+type metricsResponse struct {
 	Data map[string]*types.MetricRow `json:"data"`
+
+	Range *dateRange `json:"date_range"`
+}
+
+type dateRange struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+
+	StartPrev string `json:"start_prev"`
+	EndPrev   string `json:"end_prev"`
 }
 
 func (s *Server) metricsHandler(c *fiber.Ctx) error {
@@ -177,34 +207,44 @@ func (s *Server) metricsHandler(c *fiber.Ctx) error {
 		return s.InternalServerError(c, err)
 	}
 
-	res := &MetricsResponse{
+	res := &metricsResponse{
 		Data: make(map[string]*types.MetricRow),
+
+		Range: &dateRange{
+			Start:     req.Start.Format(time.DateOnly),
+			End:       req.End.Format(time.DateOnly),
+			StartPrev: req.StartPrev.Format(time.DateOnly),
+			EndPrev:   req.EndPrev.Format(time.DateOnly),
+		},
 	}
 
-	users, err := s.deps.PG.SelectUsersMetric(bot.ID, req.Start, req.End)
+	users, err := s.deps.PG.SelectUsersMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
 	if err != nil {
 		return s.InternalServerError(c, err)
 	}
 
 	res.Data["users"] = users
 
-	res.Data["users_uniq"] = &types.MetricRow{
-		AllTime: 95.00,
-		Period:  85.00,
-		Diff:    -10.00,
+	usersUnique, err := s.deps.PG.SelectUsersUniqueMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
+	if err != nil {
+		return s.InternalServerError(c, err)
 	}
 
-	res.Data["leads"] = &types.MetricRow{
-		AllTime: 1000,
-		Period:  100,
-		Diff:    -10.25,
+	res.Data["users_unique"] = usersUnique
+
+	leads, err := s.deps.PG.SelectLeadsMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
+	if err != nil {
+		return s.InternalServerError(c, err)
 	}
 
-	res.Data["profit"] = &types.MetricRow{
-		AllTime: 3500,
-		Period:  700,
-		Diff:    10.35,
+	res.Data["leads"] = leads
+
+	profit, err := s.deps.PG.SelectProfitMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
+	if err != nil {
+		return s.InternalServerError(c, err)
 	}
+
+	res.Data["profit"] = profit
 
 	// users, err := s.deps.PG.SelectBotUsersByDay(bot.ID, req.Start, req.End)
 

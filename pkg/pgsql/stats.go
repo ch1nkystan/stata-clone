@@ -243,25 +243,96 @@ order by tx.created_at desc;`
 	return res, nil
 }
 
-func (c *Client) SelectUsersMetric(botID int, start, end time.Time) (*types.MetricRow, error) {
+func (c *Client) SelectUsersMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
 	sess := c.GetSession()
 	res := &types.MetricRow{}
 
-	q := `with cte as (select count(*)                                                                 as total,
-	                    sum(case when created_at >= ? and created_at <= ? then 1 else 0 end) as current_period,
-	                    sum(case when created_at >= ? and created_at <= ? then 1 else 0 end) as last_period
-	             from users
-	             where mailing_state = 'ready'
-	               and bot_id = ?)
-	select total, current_period, last_period, float4(current_period) / float4(last_period) * 100 - 100 as diff
-	from cte;`
+	q := `with cte as (select count(*)                                                             as total,
+                    sum(case when created_at >= ? and created_at < ? then 1 else 0 end) as current_period,
+                    sum(case when created_at >= ? and created_at < ? then 1 else 0 end) as last_period
+             from users
+             where mailing_state = 'ready'
+               and bot_id = ?)
+select total                                                                                               as all_time,
+       current_period                                                                                      as period,
+       last_period,
+       case when last_period = 0 then 100 else float4(current_period) / float4(last_period) * 100 - 100 end as diff
+from cte;`
 
-	// substract end from start to get the period
-	diff := end.Sub(start)
-	startPrev := start.Add(-diff)
-	endPrev := end.Add(-diff)
+	if _, err := sess.SelectBySql(q, start, end, startPrev, endPrev, botID).Load(&res); err != nil {
+		return nil, err
+	}
 
-	if _, err := sess.SelectBySql(q, botID, start, end, startPrev, endPrev).Load(&res); err != nil {
+	return res, nil
+}
+
+func (c *Client) SelectLeadsMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
+	sess := c.GetSession()
+	res := &types.MetricRow{}
+
+	q := `with cte as (select count(*)                                                             as total,
+                    sum(case when created_at >= ? and created_at < ? then 1 else 0 end) as current_period,
+                    sum(case when created_at >= ? and created_at < ? then 1 else 0 end) as last_period
+             from users
+             where deposited = true
+               and bot_id = ?)
+select total                                                                                               as all_time,
+       current_period                                                                                      as period,
+       last_period,
+       case when last_period = 0 then 100 else float4(current_period) / float4(last_period) * 100 - 100 end as diff
+from cte;`
+
+	if _, err := sess.SelectBySql(q, start, end, startPrev, endPrev, botID).Load(&res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Client) SelectProfitMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
+	sess := c.GetSession()
+	res := &types.MetricRow{}
+
+	q := `with cte as (select sum(t.amount * t.price)                                                             as total,
+                    sum(case when t.created_at >= ? and t.created_at < ? then t.amount * t.price else 0 end) as current_period,
+                    sum(case when t.created_at >= ? and t.created_at < ? then t.amount * t.price else 0 end) as last_period
+             from users join public.transactions t on users.id = t.user_id
+             where deposited = true
+               and bot_id = ?)
+select total                                                                                              as all_time,
+       current_period                                                                                     as period,
+       last_period,
+       case when last_period = 0 then 100 else float4(current_period) / float4(last_period) * 100 - 100 end as diff
+from cte;`
+
+	if _, err := sess.SelectBySql(q, start, end, startPrev, endPrev, botID).Load(&res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Client) SelectUsersUniqueMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
+	sess := c.GetSession()
+	res := &types.MetricRow{}
+
+	q := `with cte2 as (with cte as (select count(*)                                                                         as total,
+                                  sum(case when seen < 1 then 1 else 0 end)                                        as uq,
+                                  sum(case when created_at >= ? and created_at < ? then 1 else 0 end)              as cp_total,
+                                  sum(case when created_at >= ? and created_at < ? and seen < 1 then 1 else 0 end) as cp_uq,
+                                  sum(case when created_at >= ? and created_at < ? then 1 else 0 end)              as lp_total,
+                                  sum(case when created_at >= ? and created_at < ? and seen < 1 then 1 else 0 end) as lp_uq
+                           from users
+                           where bot_id = ?)
+              select case when total = 0 then 0 else uq::float4 / total::float4 * 100 end          as all_time,
+                     case when cp_total = 0 then 0 else cp_uq::float4 / cp_total::float4 * 100 end as period,
+                     case when lp_total = 0 then 0 else lp_uq::float4 / lp_total::float4 * 100 end as last_period
+              from cte)
+select all_time, period, last_period, period - last_period as diff
+from cte2;`
+
+	if _, err := sess.SelectBySql(q, start, end, start, end,
+		startPrev, endPrev, startPrev, endPrev, botID).Load(&res); err != nil {
 		return nil, err
 	}
 

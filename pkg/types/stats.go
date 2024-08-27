@@ -33,7 +33,8 @@ type DepositRow struct {
 }
 
 type MetricRow struct {
-	AllTime interface{} `db:"all_time" json:"all_time"`
-	Period  interface{} `db:"period" json:"period"`
-	Diff    interface{} `db:"diff" json:"diff"`
+	AllTime    interface{} `db:"all_time" json:"all_time"`
+	Period     interface{} `db:"period" json:"period"`
+	LastPeriod interface{} `db:"last_period" json:"last_period"`
+	Diff       interface{} `db:"diff" json:"diff"`
 }
