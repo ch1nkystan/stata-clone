@@ -30,3 +30,8 @@ type Price struct {
 	Price     float64   `db:"price" json:"price"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
+
+type Range struct {
+	Start time.Time
+	End   time.Time
+}

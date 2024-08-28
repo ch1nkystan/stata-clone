@@ -58,6 +58,7 @@ func (req *dateRangeRequest) validate() error {
 	// convert to date only
 	req.Start = req.Start.Truncate(time.Hour * 24)
 	req.End = req.End.Truncate(time.Hour * 24)
+
 	req.StartPrev = req.StartPrev.Truncate(time.Hour * 24)
 	req.EndPrev = req.EndPrev.Truncate(time.Hour * 24)
 

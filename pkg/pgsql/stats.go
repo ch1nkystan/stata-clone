@@ -299,10 +299,12 @@ func (c *Client) SelectProfitMetric(botID int, start, end, startPrev, endPrev ti
              from users join public.transactions t on users.id = t.user_id
              where deposited = true
                and bot_id = ?)
-select total                                                                                              as all_time,
-       current_period                                                                                     as period,
-       last_period,
-       case when last_period = 0 then 100 else float4(current_period) / float4(last_period) * 100 - 100 end as diff
+select coalesce(total, 0)                                                    as all_time,
+       coalesce(current_period, 0)                                           as period,
+       coalesce(last_period, 0),
+       case
+           when coalesce(last_period, 0) = 0 then 0
+           else float4(current_period) / float4(last_period) * 100 - 100 end as diff
 from cte;`
 
 	if _, err := sess.SelectBySql(q, start, end, startPrev, endPrev, botID).Load(&res); err != nil {
