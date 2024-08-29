@@ -13,11 +13,11 @@ type ConversionRow struct {
 	LeadsConversionRate float64 `db:"leads_conversion_rate" json:"leads_conversion_rate"`
 	Profit              float64 `db:"profit" json:"profit"`
 	Income              float64 `db:"income" json:"income"`
-	Expenses            float64 `db:"expenses" json:"expenses"`
+	Expense             float64 `db:"expense" json:"expense"`
+	Clicks              int     `db:"clicks" json:"clicks"`
+	Impressions         int     `db:"impressions" json:"impressions"`
 
-	Label          string                    `db:"label" json:"label"`
-	Deeplinks      []*ConversionRow          `db:"deeplinks,omitempty" json:"deeplinks,omitempty"`
-	DeeplinksLeads map[string]*ConversionRow `db:"-" json:"-"`
+	Label string `db:"label" json:"label,omitempty"`
 
 	ByDayDB time.Time `db:"by_day" json:"-"`
 	ByDay   string    `db:"-" json:"by_day,omitempty"`

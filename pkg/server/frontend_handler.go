@@ -69,6 +69,38 @@ type conversionsByDayResponse struct {
 	Data []*types.ConversionRow `json:"data"`
 }
 
+func (s *Server) conversionsByCampaignHandler(c *fiber.Ctx) error {
+	req := &dateRangeRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	if err := req.validate(); err != nil {
+		return s.BadRequest(c, err)
+	}
+
+	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	users, err := s.deps.PG.SelectBotUsersByDeeplinks(bot.ID, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	res := &conversionsByDayResponse{
+		Data: users,
+	}
+
+	// leads, err := s.deps.PG.SelectBotLeadsByDay(bot.ID, req.Start, req.End)
+	// if err != nil {
+	// 	return s.InternalServerError(c, err)
+	// }
+
+	return c.JSON(res)
+}
+
 func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 	req := &dateRangeRequest{}
 	if err := c.BodyParser(&req); err != nil {
@@ -84,13 +116,13 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 		return s.InternalServerError(c, err)
 	}
 
+	res := &conversionsByDayResponse{
+		Data: make([]*types.ConversionRow, 0),
+	}
+
 	users, err := s.deps.PG.SelectBotUsersByDay(bot.ID, req.Start, req.End)
 	if err != nil {
 		return s.InternalServerError(c, err)
-	}
-
-	res := &conversionsByDayResponse{
-		Data: make([]*types.ConversionRow, 0),
 	}
 
 	leads, err := s.deps.PG.SelectBotLeadsByDay(bot.ID, req.Start, req.End)
@@ -98,11 +130,15 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 		return s.InternalServerError(c, err)
 	}
 
+	expenses, err := s.deps.PG.SelectBotExpensesByDay(bot.ID, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
 	// make same as above but from end to start
 	for d := req.End; d.After(req.Start); d = d.Add(-time.Hour * 24) {
 		row := &types.ConversionRow{
-			ByDay:     d.Format(time.DateOnly),
-			Deeplinks: make([]*types.ConversionRow, 0),
+			ByDay: d.Format(time.DateOnly),
 		}
 
 		uData, ok := users[d.Format(time.DateOnly)]
@@ -110,7 +146,6 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 			row.UsersTotal = uData.UsersTotal
 			row.UsersUnique = uData.UsersUnique
 			row.UsersUniqueRate = uData.UsersUniqueRate
-			row.Deeplinks = uData.Deeplinks
 		}
 
 		lData, ok := leads[d.Format(time.DateOnly)]
@@ -121,22 +156,18 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 			if row.UsersTotal != 0 {
 				row.LeadsConversionRate = float64(row.LeadsUsers) / float64(row.UsersTotal) * 100
 			}
-			row.Profit = lData.Profit
 
-			for _, d := range row.Deeplinks {
-				dl, ok := lData.DeeplinksLeads[d.Label]
-				if ok {
-					d.LeadsTotal = dl.LeadsTotal
-					d.LeadsUsers = dl.LeadsUsers
-					d.LeadsPerUser = dl.LeadsPerUser
-					if d.UsersTotal != 0 {
-						d.LeadsConversionRate = float64(d.LeadsUsers) / float64(d.UsersTotal) * 100
-					}
-
-					d.Profit = dl.Profit
-				}
-			}
+			row.Income = lData.Income
 		}
+
+		eData, ok := expenses[d.Format(time.DateOnly)]
+		if ok {
+			row.Impressions = eData.Impressions
+			row.Clicks = eData.Clicks
+			row.Expense = eData.Expense
+		}
+
+		row.Profit = row.Income - row.Expense
 
 		res.Data = append(res.Data, row)
 	}

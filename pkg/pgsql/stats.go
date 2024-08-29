@@ -77,48 +77,31 @@ from cte;`
 		return nil, err
 	}
 
-	withDeeplinks, err := c.SelectBotUsersWithDeeplinksByDay(botID, start, end)
-	if err != nil {
-		return nil, err
-	}
-
 	for _, v := range conversions {
-		for _, d := range withDeeplinks {
-			if v.Deeplinks == nil {
-				v.Deeplinks = make([]*types.ConversionRow, 0)
-			}
-
-			if v.ByDayDB.Format(time.DateOnly) == d.ByDayDB.Format(time.DateOnly) {
-				v.Deeplinks = append(v.Deeplinks, d)
-			}
-		}
-
 		res[v.ByDayDB.Format(time.DateOnly)] = v
 	}
 
 	return res, nil
 }
 
-func (c *Client) SelectBotUsersWithDeeplinksByDay(botID int, start, end time.Time) ([]*types.ConversionRow, error) {
+func (c *Client) SelectBotUsersByDeeplinks(botID int, start, end time.Time) ([]*types.ConversionRow, error) {
 	sess := c.GetSession()
 
 	conversions := make([]*types.ConversionRow, 0)
 	q := `with cte as (select count(*)                                        as users_total,
                     sum(case when users.seen < 1 then 1 else 0 end) as users_unique,
-                    d.label                                         as label,
-                    date_trunc('day', users.created_at)             as by_day
+                    d.label                                         as label
              from users
                       join deeplinks d on users.deeplink_id = d.id
              where users.bot_id = ?
                and users.created_at >= ?
-               and users.created_at <= ?
-             group by d.label, by_day
-             order by by_day desc)
+               and users.created_at < ?
+             group by d.label
+             order by users_total desc)
 select users_total,
        users_unique,
        users_unique::float4 / users_total::float4 * 100 as users_unique_rate,
-       label,
-       by_day
+       label
 from cte;`
 
 	if _, err := sess.SelectBySql(q, botID, start, end).Load(&conversions); err != nil {
@@ -134,21 +117,21 @@ func (c *Client) SelectBotLeadsByDay(botID int, start, end time.Time) (map[strin
 	conversions := make([]*types.ConversionRow, 0)
 	q := `with cte as (select count(distinct telegram_id)           as leads_users,
                     count(*)                              as leads_total,
-                    coalesce(sum(t.price * t.amount), 0)  as profit,
+                    coalesce(sum(t.price * t.amount), 0)  as income,
                     date_trunc('day', users.deposited_at) as by_day
              from users
                       full outer join transactions t on users.id = t.user_id
              where bot_id = ?
                and users.deposited_at >= ?
-               and users.deposited_at <= ?
-               and (t.created_at >= ? and t.created_at <= ? or t.created_at is null)
+               and users.deposited_at < ?
+               and (t.created_at >= ? and t.created_at < ? or t.created_at is null)
                and deposited = true
              group by by_day
              order by by_day desc)
 select leads_users,
        leads_total,
        leads_total::float4 / leads_users::float4 as leads_per_user,
-	   profit,
+	   income,
        by_day
 from cte;`
 
@@ -157,63 +140,37 @@ from cte;`
 	}
 
 	for _, v := range conversions {
-		res[v.ByDayDB.Format(time.DateOnly)] = v
-	}
-
-	withDeeplinks, err := c.SelectBotLeadsWithDeeplinksByDay(botID, start, end)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, v := range conversions {
-		for _, d := range withDeeplinks {
-			if v.DeeplinksLeads == nil {
-				v.DeeplinksLeads = make(map[string]*types.ConversionRow, 0)
-			}
-
-			if v.ByDayDB.Format(time.DateOnly) == d.ByDayDB.Format(time.DateOnly) {
-				v.DeeplinksLeads[d.Label] = d
-			}
-		}
-
 		res[v.ByDayDB.Format(time.DateOnly)] = v
 	}
 
 	return res, nil
 }
 
-func (c *Client) SelectBotLeadsWithDeeplinksByDay(botID int, start, end time.Time) ([]*types.ConversionRow, error) {
+func (c *Client) SelectBotExpensesByDay(botID int, start, end time.Time) (map[string]*types.ConversionRow, error) {
 	sess := c.GetSession()
+	res := make(map[string]*types.ConversionRow, 0)
+	expenses := make([]*types.ConversionRow, 0)
+	q := `select sum(clicks)                 as clicks,
+       sum(impressions)            as impressions,
+       sum(spend)                  as spend,
+       date_trunc('day', fcs.date) as by_day
+from deeplinks d
+         join fbtool_accounts fa on d.label = fa.fbtool_account_name
+         join fbtool_campaigns_stats fcs on fa.fbtool_account_id = fcs.fbtool_account_id
+where d.bot_id = ?
+  and fcs.date >= ?
+  and fcs.date < ?
+group by by_day`
 
-	conversions := make([]*types.ConversionRow, 0)
-	q := `with cte as (select count(distinct telegram_id)           as leads_users,
-                    count(*)                              as leads_total,
-                    d.label                               as label,
-                    coalesce(sum(t.price * t.amount), 0)  as profit,
-                    date_trunc('day', users.deposited_at) as by_day
-             from users
-                      join deeplinks d on users.deeplink_id = d.id
-                      full outer join transactions t on users.id = t.user_id
-             where users.bot_id = ?
-               and users.deposited_at >= ?
-               and users.deposited_at <= ?
-               and (t.created_at >= ? and t.created_at <= ? or t.created_at is null)
-               and deposited = true
-             group by d.label, by_day
-             order by by_day desc)
-select leads_users,
-       leads_total,
-       leads_total::float4 / leads_users::float4 as leads_per_user,
-       profit,
-       label,
-       by_day
-from cte;`
-
-	if _, err := sess.SelectBySql(q, botID, start, end, start, end).Load(&conversions); err != nil {
+	if _, err := sess.SelectBySql(q, botID, start, end).Load(&expenses); err != nil {
 		return nil, err
 	}
 
-	return conversions, nil
+	for _, v := range expenses {
+		res[v.ByDayDB.Format(time.DateOnly)] = v
+	}
+
+	return res, nil
 }
 
 func (c *Client) SelectDepositsByBotID(botID int, start, end time.Time) ([]*types.DepositRow, error) {
