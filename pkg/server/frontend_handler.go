@@ -93,7 +93,7 @@ func (s *Server) conversionsByCampaignHandler(c *fiber.Ctx) error {
 	labels = append(labels, "referral")
 
 	for _, d := range deeplinks {
-		labels = append(labels, d.Hash)
+		labels = append(labels, d.Label)
 	}
 
 	users, err := s.deps.PG.SelectBotUsersByDeeplinks(bot.ID, req.Start, req.End)
