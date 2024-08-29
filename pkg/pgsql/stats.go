@@ -121,7 +121,7 @@ func (c *Client) SelectBotExpensesByDeeplinks(botID int, start, end time.Time) (
 	conversions := make([]*types.ConversionRow, 0)
 	q := `select sum(clicks)      as clicks,
        sum(impressions) as impressions,
-       sum(spend)       as spend,
+       sum(spend)       as expense,
        label
 from deeplinks d
          join fbtool_accounts fa on d.label = fa.fbtool_account_name
@@ -218,7 +218,7 @@ func (c *Client) SelectBotExpensesByDay(botID int, start, end time.Time) (map[st
 	expenses := make([]*types.ConversionRow, 0)
 	q := `select sum(clicks)                 as clicks,
        sum(impressions)            as impressions,
-       sum(spend)                  as spend,
+       sum(spend)                  as expense,
        date_trunc('day', fcs.date) as by_day
 from deeplinks d
          join fbtool_accounts fa on d.label = fa.fbtool_account_name
