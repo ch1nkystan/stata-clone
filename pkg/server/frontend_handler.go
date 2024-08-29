@@ -84,19 +84,72 @@ func (s *Server) conversionsByCampaignHandler(c *fiber.Ctx) error {
 		return s.InternalServerError(c, err)
 	}
 
+	deeplinks, err := s.deps.PG.SelectBotDeeplinksByReferralID(bot.ID, 0)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	labels := make([]string, 0)
+	labels = append(labels, "referral")
+
+	for _, d := range deeplinks {
+		labels = append(labels, d.Hash)
+	}
+
 	users, err := s.deps.PG.SelectBotUsersByDeeplinks(bot.ID, req.Start, req.End)
 	if err != nil {
 		return s.InternalServerError(c, err)
 	}
 
-	res := &conversionsByDayResponse{
-		Data: users,
+	leads, err := s.deps.PG.SelectBotLeadsByDeeplinks(bot.ID, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
 	}
 
-	// leads, err := s.deps.PG.SelectBotLeadsByDay(bot.ID, req.Start, req.End)
-	// if err != nil {
-	// 	return s.InternalServerError(c, err)
-	// }
+	expenses, err := s.deps.PG.SelectBotExpensesByDeeplinks(bot.ID, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	res := &conversionsByDayResponse{
+		Data: make([]*types.ConversionRow, 0),
+	}
+
+	for _, label := range labels {
+		row := &types.ConversionRow{
+			Label: label,
+		}
+
+		uData, ok := users[label]
+		if ok {
+			row.UsersTotal = uData.UsersTotal
+			row.UsersUnique = uData.UsersUnique
+			row.UsersUniqueRate = uData.UsersUniqueRate
+		}
+
+		lData, ok := leads[label]
+		if ok {
+			row.LeadsTotal = lData.LeadsTotal
+			row.LeadsUsers = lData.LeadsUsers
+			row.LeadsPerUser = lData.LeadsPerUser
+			if row.UsersTotal != 0 {
+				row.LeadsConversionRate = float64(row.LeadsUsers) / float64(row.UsersTotal) * 100
+			}
+
+			row.Income = lData.Income
+		}
+
+		eData, ok := expenses[label]
+		if ok {
+			row.Impressions = eData.Impressions
+			row.Clicks = eData.Clicks
+			row.Expense = eData.Expense
+		}
+
+		row.Profit = row.Income - row.Expense
+
+		res.Data = append(res.Data, row)
+	}
 
 	return c.JSON(res)
 }
