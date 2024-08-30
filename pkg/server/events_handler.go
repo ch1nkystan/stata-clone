@@ -219,6 +219,51 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 	return s.ResponseOK(c)
 }
 
+type EventsSubmitLaunchRequest struct {
+	BotToken   string `json:"bot_token"`
+	TelegramID int64  `json:"telegram_id"`
+}
+
+func (req *EventsSubmitLaunchRequest) validate() error {
+	if req.TelegramID == 0 {
+		return errors.New("invalid telegram_id")
+	}
+
+	return nil
+}
+
+func (s *Server) EventsSubmitLaunchHandler(c *fiber.Ctx) error {
+	req := &EventsSubmitLaunchRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	if err := req.validate(); err != nil {
+		return s.BadRequest(c, err)
+	}
+
+	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
+	if err != nil {
+		return s.InternalServerError(c,
+			fmt.Errorf("select bot by token: %w", err))
+	}
+
+	metricsEvents.WithLabelValues(bot.BotToken, types.EventTypeLaunch).Inc()
+
+	users, err := s.deps.PG.SelectBotUsersByTelegramID(bot.ID, req.TelegramID)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	if len(users) > 0 {
+		if err := s.deps.PG.UpdateUserMessagedAt(users[0].ID); err != nil {
+			return s.InternalServerError(c, err)
+		}
+	}
+
+	return s.ResponseOK(c)
+}
+
 type EventsSubmitDepositRequest struct {
 	UserID             int   `json:"user_id"`
 	ReporterTelegramID int64 `json:"reporter_telegram_id"`

@@ -3,6 +3,7 @@ package types
 const (
 	EventTypeRegister = "register"
 	EventTypeMessage  = "message"
+	EventTypeLaunch   = "launch"
 	EventTypeMailing  = "mailing"
 	EventTypeDeposit  = "deposit"
 )

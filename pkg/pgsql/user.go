@@ -253,6 +253,17 @@ func (c *Client) CreateUser(user *types.User) error {
 	return nil
 }
 
+func (c *Client) UpdateUserMessagedAt(id int) error {
+	sess := c.GetSession()
+
+	q := `update users set messaged_at = now() where id = ?`
+	if _, err := sess.UpdateBySql(q, id).Exec(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) UpdateUserOnMessage(old, new *types.User) error {
 	sess := c.GetSession()
 

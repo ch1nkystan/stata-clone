@@ -84,6 +84,7 @@ func New(cfg *Config, deps *Deps) *Server {
 	event := api.Group("/events")
 	event.Post("/submit/user-register", s.EventsSubmitUserRegisterHandler)
 	event.Post("/submit/message", s.EventsSubmitMessageHandler)
+	event.Post("/submit/launch", s.EventsSubmitLaunchHandler)
 	event.Post("/submit/deposit", s.EventsSubmitDepositHandler)
 
 	mailing := api.Group("/mailing")
