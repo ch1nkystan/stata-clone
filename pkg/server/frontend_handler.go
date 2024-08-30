@@ -38,6 +38,9 @@ func (req *dateRangeRequest) validate() error {
 		eat = time.Now()
 	}
 
+	// add 24 hours to end date
+	eat = eat.Add(time.Hour * 24)
+
 	if eat.After(time.Now().Add(time.Hour * 24)) {
 		eat = time.Now().Add(time.Hour * 24)
 	}
