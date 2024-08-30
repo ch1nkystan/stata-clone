@@ -31,7 +31,7 @@ func (c *Client) CreateFBToolAccount(record *types.FBToolAccount) error {
 func (c *Client) SelectUnfetchedFBToolTokens() ([]*types.FBToolToken, error) {
 	sess := c.GetSession()
 
-	q := `select * from fbtool_tokens where active = true and fetched_at < now() - interval '6 hour' order by random() limit 1;`
+	q := `select * from fbtool_tokens where active = true and fetched_at < now() - interval '3 hour' order by random() limit 1;`
 
 	res := make([]*types.FBToolToken, 0)
 	if _, err := sess.SelectBySql(q).Load(&res); err != nil {
@@ -44,7 +44,11 @@ func (c *Client) SelectUnfetchedFBToolTokens() ([]*types.FBToolToken, error) {
 func (c *Client) SelectUnfetchedFBToolAccounts(tokenID int) ([]*types.FBToolAccount, error) {
 	sess := c.GetSession()
 
-	q := `select * from fbtool_accounts where active = true and token_id = ? and fetched_at < now() - interval '1 day' and fetch_duration < 25`
+	q := `select *
+from fbtool_accounts
+where active = true
+  and token_id = ?
+  and ((fetched_at < now() - interval '24 hours' and fetched = true) or (fetch_duration < 25 and fetched = false));`
 
 	res := make([]*types.FBToolAccount, 0)
 	if _, err := sess.SelectBySql(q, tokenID).Load(&res); err != nil {
@@ -91,7 +95,7 @@ func (c *Client) UpdateFBToolTokenFetchedAt(id int) error {
 func (c *Client) UpdateFBToolTokenDaysToFetch(id int) error {
 	sess := c.GetSession()
 
-	q := `update fbtool_tokens set days_to_fetch = 2 where id = ?`
+	q := `update fbtool_tokens set days_to_fetch = 7 where id = ?`
 	if _, err := sess.UpdateBySql(q, id).Exec(); err != nil {
 		return fmt.Errorf("failed to update fbtool token days_to_fetch: %w", err)
 	}
