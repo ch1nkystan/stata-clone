@@ -6,6 +6,8 @@ create table if not exists fbtool_tokens
     active        boolean      default true  not null,
     days_to_fetch integer      default 10    not null,
 
+    bid           varchar(32)  default ''    not null,
+
     created_at    timestamp    default now() not null,
     fetched_at    timestamp    default now() not null
 );
