@@ -18,7 +18,8 @@ import (
 )
 
 type Server struct {
-	App *fiber.App
+	App    *fiber.App
+	routes map[string]struct{}
 
 	cfg  *Config
 	deps *Deps
@@ -39,7 +40,8 @@ type Deps struct {
 
 func New(cfg *Config, deps *Deps) *Server {
 	s := &Server{
-		App: fiber.New(fiber.Config{}),
+		App:    fiber.New(fiber.Config{}),
+		routes: map[string]struct{}{},
 
 		cfg:  cfg,
 		deps: deps,
@@ -105,6 +107,11 @@ func New(cfg *Config, deps *Deps) *Server {
 	f.Post("/stats/conversions-by-campaign", s.conversionsByCampaignHandler)
 	f.Post("/stats/deposits-log", s.depositsLogHandler)
 	f.Post("/stats/metrics", s.metricsHandler)
+
+	routes := s.App.GetRoutes()
+	for _, route := range routes {
+		s.routes[route.Path] = struct{}{}
+	}
 
 	return s
 }
@@ -177,7 +184,9 @@ func (s *Server) MonitoringMiddleware(c *fiber.Ctx) error {
 
 	// status codes metrics
 	metricStatusCodes.WithLabelValues(strconv.Itoa(c.Response().StatusCode())).Inc()
-	metricPathRequests.WithLabelValues(path).Inc()
+	if _, ok := s.routes[path]; ok {
+		metricPathRequests.WithLabelValues(path).Inc()
+	}
 
 	return err
 }
