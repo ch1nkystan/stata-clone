@@ -158,6 +158,8 @@ func (s *Server) Unauthorized(c *fiber.Ctx) error {
 }
 
 func (s *Server) MonitoringMiddleware(c *fiber.Ctx) error {
+	path := string(c.Context().Path())
+
 	start := time.Now()
 	err := c.Next()
 	finish := time.Now()
@@ -175,6 +177,7 @@ func (s *Server) MonitoringMiddleware(c *fiber.Ctx) error {
 
 	// status codes metrics
 	metricStatusCodes.WithLabelValues(strconv.Itoa(c.Response().StatusCode())).Inc()
+	metricPathRequests.WithLabelValues(path).Inc()
 
 	return err
 }

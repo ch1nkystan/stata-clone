@@ -24,9 +24,21 @@ var (
 		},
 		[]string{"bot_token", "event_type"},
 	)
+
+	metricPathRequests = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: namespace,
+			Name:      "http_path_requests_count",
+			Help:      "Number of HTTP requests by status code.",
+		},
+		[]string{"path"},
+	)
 )
 
 func init() {
-	prometheus.MustRegister(metricStatusCodes)
-	prometheus.MustRegister(metricsEvents)
+	prometheus.MustRegister(
+		metricStatusCodes,
+		metricsEvents,
+		metricPathRequests,
+	)
 }
