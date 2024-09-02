@@ -289,6 +289,36 @@ from cte;`
 	return res, nil
 }
 
+func (c *Client) SelectUsersReferralsMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
+	sess := c.GetSession()
+	res := &types.MetricRow{}
+
+	q := `
+		with cte2 as (with cte as (select count(*)                                                            					   as total,
+										  sum(case when created_at >= ? and created_at < ? then 1 else 0 end) 					   as cp_total,
+										  sum(case when created_at >= ? and created_at < ? then 1 else 0 end) 					   as lp_total,
+										  sum(case when deeplink_id != 0 then 1 else 0 end) 									   as refs,
+										  sum(case when deeplink_id != 0 and created_at >= ? and created_at < ? then 1 else 0 end) as cp_refs,
+										  sum(case when deeplink_id != 0 and created_at >= ? and created_at < ? then 1 else 0 end) as lp_refs
+								   from users
+								   where bot_id = ?)
+
+					  select case when total = 0 then 0 else refs::float4 / total::float4 * 100 end          as all_time,
+                      		 case when cp_total = 0 then 0 else cp_refs::float4 / cp_total::float4 * 100 end as period,
+                      		 case when lp_total = 0 then 0 else lp_refs::float4 / lp_total::float4 * 100 end as last_period
+                      from cte)
+
+		select all_time, period, last_period, period - last_period as diff
+		from cte2
+	`
+	if _, err := sess.SelectBySql(q, start, end, startPrev, endPrev,
+		start, end, startPrev, endPrev, botID).Load(&res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (c *Client) SelectLeadsMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
 	sess := c.GetSession()
 	res := &types.MetricRow{}

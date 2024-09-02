@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/prosperofair/pkg/log"
 	"github.com/prosperofair/stata/pkg/types"
+	"go.uber.org/zap"
 )
 
 type dateRangeRequest struct {
@@ -57,6 +59,10 @@ func (req *dateRangeRequest) validate() error {
 
 	req.StartPrev = req.Start.Add(-diff)
 	req.EndPrev = req.End.Add(-diff)
+
+	// add 24 hours to end
+	req.End = req.End.Add(time.Hour * 24)
+	req.EndPrev = req.EndPrev.Add(time.Hour * 24)
 
 	// convert to date only
 	req.Start = req.Start.Truncate(time.Hour * 24)
@@ -316,6 +322,15 @@ func (s *Server) metricsHandler(c *fiber.Ctx) error {
 	}
 
 	res.Data["users"] = users
+
+	usersReferrals, err := s.deps.PG.SelectUsersReferralsMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
+	if err != nil {
+		log.Error("failed to select users referrals 1", zap.Error(err))
+
+		return s.InternalServerError(c, err)
+	}
+
+	res.Data["users_referrals"] = usersReferrals
 
 	usersUnique, err := s.deps.PG.SelectUsersUniqueMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
 	if err != nil {
