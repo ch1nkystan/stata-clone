@@ -191,12 +191,12 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 		return s.InternalServerError(c, err)
 	}
 
-	// fix to hide row for future dates
-	rEnd := req.End
-	if req.End.After(time.Now()) {
-		rEnd = time.Now().Truncate(time.Hour * 24)
-	}
-	for d := rEnd; d.After(req.Start); d = d.Add(-time.Hour * 24) {
+	for d := req.End; d.After(req.Start); d = d.Add(-time.Hour * 24) {
+		if d.After(time.Now()) {
+			// fix to hide row for future dates
+			continue
+		}
+
 		row := &types.ConversionRow{
 			ByDay: d.Format(time.DateOnly),
 		}
