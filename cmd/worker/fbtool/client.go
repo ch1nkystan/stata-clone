@@ -210,12 +210,12 @@ func (c *Client) GetAccounts() (*AccountsResponse, error) {
 	res := &AccountsResponse{}
 	if err := json.Unmarshal(data, &res); err != nil {
 		return nil, err
-    }
+	}
 
-    accounts := make(map[string]*Account)
-    if err := json.Unmarshal(data, &accounts); err != nil {
-        return nil, err
-    }
+	accounts := make(map[string]*Account)
+	if err := json.Unmarshal(data, &accounts); err != nil {
+		return nil, err
+	}
 	res.Data = accounts
 
 	return res, nil
