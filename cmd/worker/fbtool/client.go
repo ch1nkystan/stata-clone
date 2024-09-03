@@ -28,7 +28,8 @@ func NewClient(token string) *Client {
 }
 
 type StatisticsResponse struct {
-	Data []StatisticsAccount `json:"data"`
+	Data         []StatisticsAccount `json:"data"`
+	RequestsLeft int                 `json:"requestsLeft"`
 
 	// optional
 	Success bool   `json:"success,omitempty"`
@@ -150,7 +151,10 @@ func (c *Client) GetStatistics(account int, start, end time.Time) (*StatisticsRe
 	return res, nil
 }
 
-type AccountsResponse struct{}
+type AccountsResponse struct {
+	Data         map[string]*Account `json:"-"`
+	RequestsLeft int                 `json:"requestsLeft"`
+}
 
 type Account struct {
 	ID   int    `json:"id"`
@@ -179,7 +183,7 @@ func (a *Account) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *Client) GetAccounts() (map[string]*Account, error) {
+func (c *Client) GetAccounts() (*AccountsResponse, error) {
 	url := "https://fbtool.pro/api/get-accounts?key=%s"
 	reqURL := fmt.Sprintf(url, c.APIKey)
 
@@ -192,16 +196,27 @@ func (c *Client) GetAccounts() (map[string]*Account, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-	res := make(map[string]*Account)
-	if err = json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return nil, err
 	}
+
+	res := &AccountsResponse{}
+	if err := json.Unmarshal(data, &res); err != nil {
+		return nil, err
+    }
+
+    accounts := make(map[string]*Account)
+    if err := json.Unmarshal(data, &accounts); err != nil {
+        return nil, err
+    }
+	res.Data = accounts
 
 	return res, nil
 }
