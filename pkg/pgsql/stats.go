@@ -342,7 +342,35 @@ from cte;`
 	return res, nil
 }
 
-func (c *Client) SelectProfitMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
+func (c *Client) SelectExpenseMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
+	sess := c.GetSession()
+	res := &types.MetricRow{}
+
+	q := `
+		with cte as (select sum(spend)                                                          as total,
+                    		sum(case when fcs.date >= ? and fcs.date < ? then spend else 0 end) as current_period,
+                    		sum(case when fcs.date >= ? and fcs.date < ? then spend else 0 end) as last_period
+             		 from deeplinks d
+                      		  join fbtool_accounts fa on d.label = fa.fbtool_account_name
+                      		  join fbtool_campaigns_stats fcs on fa.fbtool_account_id = fcs.fbtool_account_id
+             		 where d.bot_id = ?)
+
+		select coalesce(total, 0)                                                    as all_time,
+			   coalesce(current_period, 0)                                           as period,
+			   coalesce(last_period, 0)                                              as last_period,
+			   case 
+			   	   when coalesce(last_period, 0) = 0 then 0 
+				   else float4(current_period) / float4(last_period) * 100 - 100 end as diff
+		from cte
+	`
+	if _, err := sess.SelectBySql(q, start, end, startPrev, endPrev, botID).Load(&res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Client) SelectIncomeMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
 	sess := c.GetSession()
 	res := &types.MetricRow{}
 
@@ -354,12 +382,40 @@ func (c *Client) SelectProfitMetric(botID int, start, end, startPrev, endPrev ti
                and bot_id = ?)
 select coalesce(total, 0)                                                    as all_time,
        coalesce(current_period, 0)                                           as period,
-       coalesce(last_period, 0),
+       coalesce(last_period, 0)                                              as last_period,
        case
            when coalesce(last_period, 0) = 0 then 0
            else float4(current_period) / float4(last_period) * 100 - 100 end as diff
 from cte;`
 
+	if _, err := sess.SelectBySql(q, start, end, startPrev, endPrev, botID).Load(&res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func(c *Client) SelectClicksMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
+	sess := c.GetSession()
+	res := &types.MetricRow{}
+
+	q := `
+		with cte as (select sum(clicks)                                                          as total,
+                    		sum(case when fcs.date >= ? and fcs.date < ? then clicks else 0 end) as current_period,
+                    		sum(case when fcs.date >= ? and fcs.date < ? then clicks else 0 end) as last_period
+             		 from deeplinks d
+                      		  join fbtool_accounts fa on d.label = fa.fbtool_account_name
+                      		  join fbtool_campaigns_stats fcs on fa.fbtool_account_id = fcs.fbtool_account_id
+             		 where d.bot_id = ?)
+
+		select coalesce(total, 0)                                                    as all_time,
+			   coalesce(current_period, 0)                                           as period,
+			   coalesce(last_period, 0)                                              as last_period,
+			   case 
+			   	   when coalesce(last_period, 0) = 0 then 0 
+				   else float4(current_period) / float4(last_period) * 100 - 100 end as diff
+		from cte
+	`
 	if _, err := sess.SelectBySql(q, start, end, startPrev, endPrev, botID).Load(&res); err != nil {
 		return nil, err
 	}

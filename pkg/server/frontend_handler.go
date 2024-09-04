@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"math"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -346,12 +347,72 @@ func (s *Server) metricsHandler(c *fiber.Ctx) error {
 
 	res.Data["leads"] = leads
 
-	profit, err := s.deps.PG.SelectProfitMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
+	income, err := s.deps.PG.SelectIncomeMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
 	if err != nil {
 		return s.InternalServerError(c, err)
 	}
 
+	res.Data["income"] = income
+
+	expense, err := s.deps.PG.SelectExpenseMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	res.Data["expense"] = expense
+
+	f64n := func(v interface{}) float64 {
+		switch n := v.(type) {
+		case int:
+			return float64(n)
+		case int64:
+			return float64(n)
+		case float64:
+			return n
+		}
+
+		return 0
+	}
+
+	profit := &types.MetricRow{
+		AllTime:    f64n(income.AllTime) - f64n(expense.AllTime),
+		Period:     f64n(income.Period) - f64n(expense.Period),
+		LastPeriod: f64n(income.LastPeriod) - f64n(expense.LastPeriod),
+		Diff:       f64n(income.Diff) - f64n(expense.Diff),
+	}
+
 	res.Data["profit"] = profit
+
+	nan0 := func(v float64) float64 {
+		if math.IsNaN(v) {
+			return 0
+		}
+
+		return v
+	}
+
+	cpu := &types.MetricRow{
+		AllTime:    nan0(f64n(expense.AllTime) / f64n(users.AllTime)),
+		Period:     nan0(f64n(expense.Period) / f64n(users.Period)),
+		LastPeriod: nan0(f64n(expense.LastPeriod) / f64n(users.LastPeriod)),
+		Diff:       nan0(f64n(expense.Diff) / f64n(users.Diff)),
+	}
+
+	res.Data["cpu"] = cpu
+
+	clicks, err := s.deps.PG.SelectClicksMetric(bot.ID, req.Start, req.End, req.StartPrev, req.EndPrev)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	cpc := &types.MetricRow{
+		AllTime:    nan0(f64n(expense.AllTime) / f64n(clicks.AllTime)),
+		Period:     nan0(f64n(expense.Period) / f64n(clicks.Period)),
+		LastPeriod: nan0(f64n(expense.LastPeriod) / f64n(clicks.LastPeriod)),
+		Diff:       nan0(f64n(expense.Diff) / f64n(clicks.Diff)),
+	}
+
+	res.Data["cpc"] = cpc
 
 	// users, err := s.deps.PG.SelectBotUsersByDay(bot.ID, req.Start, req.End)
 
