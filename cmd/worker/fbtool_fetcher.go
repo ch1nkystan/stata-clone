@@ -46,7 +46,11 @@ func (w *Worker) fbtoolFetchAccounts(token *types.FBToolToken) error {
 		return fmt.Errorf("failed to get accounts: %w", err)
 	}
 
-	for _, account := range accounts {
+	if err := w.pg.UpdateFBToolRequestsLeft(accounts.RequestsLeft, token.ID); err != nil {
+		return fmt.Errorf("failed to update fbtool requests left: %w", err)
+	}
+
+	for _, account := range accounts.Data {
 		if account.ID == 0 {
 			continue
 		}
@@ -95,6 +99,10 @@ func (w *Worker) fbtoolFetchAccountStats(fc *fbtool.Client, account *types.FBToo
 	stats, err := fc.GetStatistics(account.FBToolAccountID, start, end)
 	if err != nil {
 		return fmt.Errorf("failed to get statistics: %w", err)
+	}
+
+	if err := w.pg.UpdateFBToolRequestsLeft(stats.RequestsLeft, account.TokenID); err != nil {
+		return fmt.Errorf("failed to update fbtool requests left: %w", err)
 	}
 
 	for _, stat := range stats.Data {

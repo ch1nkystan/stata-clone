@@ -118,6 +118,17 @@ func (c *Client) UpdateFBToolAccountFetchedAt(aid int, fetched bool, fd int) err
 	return nil
 }
 
+func (c *Client) UpdateFBToolRequestsLeft(rl, id int) error {
+	sess := c.GetSession()
+
+	q := `update fbtool_tokens set requests_left = ? where id = ?`
+	if _, err := sess.UpdateBySql(q, rl, id).Exec(); err != nil {
+		return fmt.Errorf("failed to update fbtool requests left: %w", err)
+	}
+
+	return nil
+}
+
 // func (c *Client) DisableFBToolAccount(aid int) error {
 // 	sess := c.GetSession()
 
