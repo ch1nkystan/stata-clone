@@ -401,5 +401,11 @@ func (s *Server) metricsHandler(c *fiber.Ctx) error {
 
 	res.Data["clicks"] = clicks
 
+	for k, metric := range res.Data {
+		if f64n(metric.LastPeriod) == 0 && f64n(metric.Period) != f64n(metric.LastPeriod) {
+			res.Data[k].Diff = 100
+		}
+	}
+
 	return c.JSON(res)
 }
