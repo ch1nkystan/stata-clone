@@ -392,5 +392,14 @@ func (s *Server) metricsHandler(c *fiber.Ctx) error {
 
 	res.Data["cpc"] = cpc
 
+	clicks = &types.MetricRow{
+		AllTime:    clicks.AllTime,
+		Period:     clicks.Period,
+		LastPeriod: clicks.LastPeriod,
+		Diff:       clicks.Diff,
+	}
+
+	res.Data["clicks"] = clicks
+
 	return c.JSON(res)
 }
