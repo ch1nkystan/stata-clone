@@ -294,18 +294,19 @@ func (c *Client) SelectUsersReferralsMetric(botID int, start, end, startPrev, en
 	res := &types.MetricRow{}
 
 	q := `
-		with cte2 as (with cte as (select count(*)                                                            					   as total,
-										  sum(case when created_at >= ? and created_at < ? then 1 else 0 end) 					   as cp_total,
-										  sum(case when created_at >= ? and created_at < ? then 1 else 0 end) 					   as lp_total,
-										  sum(case when deeplink_id != 0 then 1 else 0 end) 									   as refs,
-										  sum(case when deeplink_id != 0 and created_at >= ? and created_at < ? then 1 else 0 end) as cp_refs,
-										  sum(case when deeplink_id != 0 and created_at >= ? and created_at < ? then 1 else 0 end) as lp_refs
-								   from users
-								   where bot_id = ?)
+		with cte2 as (with cte as (select count(*)                                                            					   				   as total,
+										  sum(case when u.created_at >= ? and u.created_at < ? then 1 else 0 end) 					   			   as cp_total,
+										  sum(case when u.created_at >= ? and u.created_at < ? then 1 else 0 end) 					   			   as lp_total,
+										  sum(case when dl.referral_telegram_id != 0 then 1 else 0 end) 									       as refs,
+										  sum(case when dl.referral_telegram_id != 0 and u.created_at >= ? and u.created_at < ? then 1 else 0 end) as cp_refs,
+										  sum(case when dl.referral_telegram_id != 0 and u.created_at >= ? and u.created_at < ? then 1 else 0 end) as lp_refs
+								   from users u
+								   		  left join deeplinks dl on u.deeplink_id = dl.id
+								   where u.bot_id = ?)
 
-					  select case when total = 0 then 0 else refs::float4 / total::float4 * 100 end          as all_time,
-                      		 case when cp_total = 0 then 0 else cp_refs::float4 / cp_total::float4 * 100 end as period,
-                      		 case when lp_total = 0 then 0 else lp_refs::float4 / lp_total::float4 * 100 end as last_period
+					  select case when coalesce(total, 0) = 0 then 0 else refs::float4 / total::float4 * 100 end          as all_time,
+                      		 case when coalesce(cp_total, 0) = 0 then 0 else cp_refs::float4 / cp_total::float4 * 100 end as period,
+                      		 case when coalesce(lp_total, 0) = 0 then 0 else lp_refs::float4 / lp_total::float4 * 100 end as last_period
                       from cte)
 
 		select all_time, period, last_period, period - last_period as diff
