@@ -84,6 +84,38 @@ from cte;`
 	return res, nil
 }
 
+func (c *Client) SelectBotUsersByPeriod(botID int, period string, start, end time.Time) (map[string]*types.ConversionRow, error) {
+	sess := c.GetSession()
+	res := make(map[string]*types.ConversionRow, 0)
+	conversions := make([]*types.ConversionRow, 0)
+	q := `
+		with cte as (select count(*)                                        as users_total,
+							sum(case when users.seen < 1 then 1 else 0 end) as users_unique,
+						    date_trunc(?, users.created_at)            as by_period
+					 from users
+					 where bot_id = ?
+					   and created_at >= ?
+					   and created_at <= ?
+					group by by_period
+					order by by_period desc)
+		select users_total,
+			users_unique,
+			users_unique::float4 / users_total::float4 * 100 as users_unique_rate,
+			by_period
+		from cte
+	`
+
+	if _, err := sess.SelectBySql(q, period, botID, start, end).Load(&conversions); err != nil {
+		return nil, err
+	}
+
+	for _, v := range conversions {
+		res[v.ByPeriodDB.Format(time.DateOnly)] = v
+	}
+
+	return res, nil
+}
+
 func (c *Client) SelectBotUsersByDeeplinks(botID int, start, end time.Time) (map[string]*types.ConversionRow, error) {
 	sess := c.GetSession()
 	res := make(map[string]*types.ConversionRow, 0)
@@ -177,6 +209,42 @@ from cte;`
 	return res, nil
 }
 
+func (c *Client) SelectBotLeadsByPeriod(botID int, period string, start, end time.Time) (map[string]*types.ConversionRow, error) {
+	sess := c.GetSession()
+	res := make(map[string]*types.ConversionRow, 0)
+	conversions := make([]*types.ConversionRow, 0)
+	q := `
+		with cte as (select count(distinct telegram_id)            as leads_users,
+							count(*)                               as leads_total,
+							coalesce(sum(t.price * t.amount), 0)   as income,
+							date_trunc(?, users.deposited_at) as by_period
+					 from users
+							full outer join transactions t on users.id = t.user_id
+					 where bot_id = ?
+					   and users.deposited_at >= ?
+					   and users.deposited_at < ?
+					   and (t.created_at >= ? and t.created_at < ? or t.created_at is null)
+					   and deposited = true
+					 group by by_period
+					 order by by_period desc)
+		select leads_users,
+			   leads_total,
+			   leads_total::float4 / leads_users::float4 as leads_per_user,
+			   income,
+			   by_period
+		from cte
+	`
+	if _, err := sess.SelectBySql(q, period, botID, start, end, start, end).Load(&conversions); err != nil {
+		return nil, err
+	}
+
+	for _, v := range conversions {
+		res[v.ByPeriodDB.Format(time.DateOnly)] = v
+	}
+
+	return res, nil
+}
+
 func (c *Client) SelectBotLeadsByDay(botID int, start, end time.Time) (map[string]*types.ConversionRow, error) {
 	sess := c.GetSession()
 	res := make(map[string]*types.ConversionRow, 0)
@@ -207,6 +275,34 @@ from cte;`
 
 	for _, v := range conversions {
 		res[v.ByDayDB.Format(time.DateOnly)] = v
+	}
+
+	return res, nil
+}
+
+func (c *Client) SelectBotExpensesByPeriod(botID int, period string, start, end time.Time) (map[string]*types.ConversionRow, error) {
+	sess := c.GetSession()
+	res := make(map[string]*types.ConversionRow, 0)
+	expenses := make([]*types.ConversionRow, 0)
+	q := `
+		select sum(clicks)                  as clicks,
+			   sum(impressions)             as impressions,
+			   sum(spend)                   as expense,
+			   date_trunc(?, fcs.date) 		as by_period
+		from deeplinks d
+			   join fbtool_accounts fa on d.label = fa.fbtool_account_name
+			   join fbtool_campaigns_stats fcs on fa.fbtool_account_id = fcs.fbtool_account_id
+		where d.bot_id = ?
+		  and fcs.date >= ?
+		  and fcs.date < ?
+		group by by_period
+	`
+	if _, err := sess.SelectBySql(q, period, botID, start, end).Load(&expenses); err != nil {
+		return nil, err
+	}
+
+	for _, v := range expenses {
+		res[v.ByPeriodDB.Format(time.DateOnly)] = v
 	}
 
 	return res, nil
@@ -396,7 +492,7 @@ from cte;`
 	return res, nil
 }
 
-func(c *Client) SelectClicksMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
+func (c *Client) SelectClicksMetric(botID int, start, end, startPrev, endPrev time.Time) (*types.MetricRow, error) {
 	sess := c.GetSession()
 	res := &types.MetricRow{}
 

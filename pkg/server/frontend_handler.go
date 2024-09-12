@@ -12,6 +12,7 @@ import (
 
 type dateRangeRequest struct {
 	BotToken string `json:"bot_token"`
+	GroupBy  string `json:"group_by"`
 
 	StartAt string    `json:"start_at"`
 	Start   time.Time `json:"-"`
@@ -74,7 +75,7 @@ func (req *dateRangeRequest) validate() error {
 	return nil
 }
 
-type conversionsByDayResponse struct {
+type conversionsByPeriodResponse struct {
 	Data []*types.ConversionRow `json:"data"`
 }
 
@@ -120,7 +121,7 @@ func (s *Server) conversionsByCampaignHandler(c *fiber.Ctx) error {
 		return s.InternalServerError(c, err)
 	}
 
-	res := &conversionsByDayResponse{
+	res := &conversionsByPeriodResponse{
 		Data: make([]*types.ConversionRow, 0),
 	}
 
@@ -178,7 +179,7 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 		return s.InternalServerError(c, err)
 	}
 
-	res := &conversionsByDayResponse{
+	res := &conversionsByPeriodResponse{
 		Data: make([]*types.ConversionRow, 0),
 	}
 
@@ -237,6 +238,55 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 
 		res.Data = append(res.Data, row)
 	}
+
+	return c.JSON(res)
+}
+
+func (s *Server) conversionsByPeriodHandler(c *fiber.Ctx) error {
+	req := &dateRangeRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	if err := req.validate(); err != nil {
+		return s.BadRequest(c, err)
+	}
+
+	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	res := &conversionsByPeriodResponse{
+		Data: make([]*types.ConversionRow, 0),
+	}
+
+	users, err := s.deps.PG.SelectBotUsersByPeriod(bot.ID, req.GroupBy, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	leads, err := s.deps.PG.SelectBotLeadsByPeriod(bot.ID, req.GroupBy, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	expenses, err := s.deps.PG.SelectBotExpensesByPeriod(bot.ID, req.GroupBy, req.Start, req.End)
+	if err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	data := calcPeriodMetrics(&periodMetricsConfig{
+		users:    users,
+		leads:    leads,
+		expenses: expenses,
+
+		groupBy: req.GroupBy,
+		start:   req.Start,
+		end:     req.End,
+	})
+
+	res.Data = append(res.Data, data...)
 
 	return c.JSON(res)
 }

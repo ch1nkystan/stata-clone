@@ -21,6 +21,10 @@ type ConversionRow struct {
 
 	ByDayDB time.Time `db:"by_day" json:"-"`
 	ByDay   string    `db:"-" json:"by_day,omitempty"`
+
+	ByPeriodDB  time.Time `db:"by_period" json:"-"`
+	PeriodStart string    `db:"-" json:"period_start,omitempty"`
+	PeriodEnd   string    `db:"-" json:"period_end,omitempty"`
 }
 
 type DepositRow struct {
