@@ -31,46 +31,28 @@ func (req *dateRangeRequest) validate() error {
 
 	sat, err := time.Parse(time.DateOnly, req.StartAt)
 	if err != nil {
-		sat = time.Now().Add(-time.Hour * 24 * 30)
+		sat = time.Now().AddDate(0, -1, 0)
 	}
-
 	req.Start = sat
 
 	eat, err := time.Parse(time.DateOnly, req.EndAt)
 	if err != nil {
 		eat = time.Now()
 	}
-
-	// add 24 hours to end date
-	eat = eat.Add(time.Hour * 24)
-
-	if eat.After(time.Now().Add(time.Hour * 24)) {
-		eat = time.Now().Add(time.Hour * 24)
-	}
-
 	req.End = eat
 
 	// substract end from start to get the period
 	diff := req.End.Sub(req.Start)
-
 	if diff <= 0 {
 		diff = time.Hour * 24
 		req.End = req.Start.Add(diff)
 	}
-
 	req.StartPrev = req.Start.Add(-diff)
 	req.EndPrev = req.End.Add(-diff)
 
-	// add 24 hours to end
-	req.End = req.End.Add(time.Hour * 24)
-	req.EndPrev = req.EndPrev.Add(time.Hour * 24)
-
-	// convert to date only
-	req.Start = req.Start.Truncate(time.Hour * 24)
-	req.End = req.End.Truncate(time.Hour * 24)
-
-	req.StartPrev = req.StartPrev.Truncate(time.Hour * 24)
-	req.EndPrev = req.EndPrev.Truncate(time.Hour * 24)
+	// -1 day to account for the specified date
+	req.Start = req.Start.AddDate(0, 0, -1)
+	req.StartPrev = req.StartPrev.AddDate(0, 0, -1)
 
 	return nil
 }
@@ -199,11 +181,6 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 	}
 
 	for d := req.End; d.After(req.Start); d = d.Add(-time.Hour * 24) {
-		if d.After(time.Now()) {
-			// fix to hide row for future dates
-			continue
-		}
-
 		row := &types.ConversionRow{
 			ByDay: d.Format(time.DateOnly),
 		}
@@ -315,9 +292,7 @@ func (s *Server) depositsLogHandler(c *fiber.Ctx) error {
 		deposits[i].Hash = d.Hash[len(d.Hash)-10:]
 	}
 
-	res := &depositsLogResponse{
-		Data: deposits,
-	}
+	res := &depositsLogResponse{Data: deposits}
 
 	return c.JSON(res)
 }
