@@ -143,6 +143,20 @@ func (c *Client) UpdateFBToolRequestsLeft(rl, id int) error {
 func (c *Client) CreateFBToolCampaignStat(record *types.FBToolCampaignStat) error {
 	sess := c.GetSession()
 
+	var res *types.FBToolCampaignStat
+	q := `select * from fbtool_campaigns_stats where fbtool_account_id = ? and campaign_id = ? and date = ?`
+	if _, err := sess.SelectBySql(q, record.FBToolAccountID, record.CampaignID, record.Date).Load(&res); err != nil {
+		return fmt.Errorf("failed to check exists fbtool campaign stat: %w", err)
+	}
+
+	if res != nil {
+		if record.Clicks > res.Clicks || record.Impressions > res.Impressions || record.Spend > res.Spend {
+			return c.updateFBToolCampaignStat(record)
+		}
+
+		return nil
+	}
+
 	if _, err := sess.InsertInto("fbtool_campaigns_stats").
 		Columns(
 			"fbtool_account_id",
@@ -156,6 +170,37 @@ func (c *Client) CreateFBToolCampaignStat(record *types.FBToolCampaignStat) erro
 			"date",
 		).Record(record).Exec(); err != nil {
 		return fmt.Errorf("failed to create fbtool campaign stat: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Client) updateFBToolCampaignStat(record *types.FBToolCampaignStat) error {
+	sess := c.GetSession()
+
+	q := `
+		update fbtool_campaigns_stats
+		set	status 			 = ?,
+			effective_status = ?,
+			impressions 	 = ?,
+			clicks 			 = ?,
+			spend 			 = ?
+		where fbtool_account_id = ?
+		  and campaign_id = ?
+		  and date = ?
+	`
+	if _, err := sess.UpdateBySql(
+		q,
+		record.Status,
+		record.EffectiveStatus,
+		record.Impressions,
+		record.Clicks,
+		record.Spend,
+		record.FBToolAccountID,
+		record.CampaignID,
+		record.Date,
+	).Exec(); err != nil {
+		return fmt.Errorf("failed to update fbtool campaign stat: %w", err)
 	}
 
 	return nil

@@ -87,11 +87,12 @@ func (w *Worker) fbtoolFetchAccounts(token *types.FBToolToken) error {
 
 func (w *Worker) fbtoolFetchAccountStats(fc *fbtool.Client, account *types.FBToolAccount, daysToFetch int) error {
 	now := time.Now()
-	end := now.AddDate(0, 0, -1)
-	start := now.AddDate(0, 0, -daysToFetch)
+
+	end := now.AddDate(0, 0, 1)
+	start := end.AddDate(0, 0, -daysToFetch)
 
 	fetched := false
-	startedAt := time.Now()
+	startedAt := now
 	if err := w.pg.UpdateFBToolAccountFetchedAt(account.FBToolAccountID, fetched, 0); err != nil {
 		return fmt.Errorf("failed to update fbtool account fetched_at: %w", err)
 	}
