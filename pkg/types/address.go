@@ -3,10 +3,23 @@ package types
 import "time"
 
 const (
-	TransactionBlockchainBSC = "bsc"
-	TransactionBlockchainETH = "eth"
-	TransactionBlockchainBTC = "btc"
+	BlockchainBSC = "bsc"
+	BlockchainETH = "eth"
+	BlockchainBTC = "btc"
 )
+
+type Address struct {
+	ID int `db:"id" json:"id"`
+
+	Blockchain string `db:"blockchain" json:"blockchain"`
+	AddressKey string `db:"address_key" json:"address_key"`
+	Address    string `db:"address" json:"address"`
+
+	BID string `db:"bid" json:"bid"`
+
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
 
 type Transaction struct {
 	ID int `db:"id" json:"id"`

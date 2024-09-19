@@ -1,8 +1,39 @@
 package pgsql
 
 import (
+	"fmt"
+
 	"github.com/prosperofair/stata/pkg/types"
 )
+
+func (c *Client) CreateAddress(address *types.Address) error {
+	sess := c.GetSession()
+
+	if _, err := sess.InsertInto("addresses").
+		Columns(
+			"blockchain",
+			"address_key",
+			"address",
+			"bid",
+		).
+		Record(address).Exec(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) SelectAddress(addressKey string) (*types.Address, error) {
+	sess := c.GetSession()
+	address := &types.Address{}
+
+	q := `select * from addresses where address_key = ?;`
+	if err := sess.SelectBySql(q).LoadOne(&address); err != nil {
+		return nil, fmt.Errorf("failed to select address: %w", err)
+	}
+
+	return address, nil
+}
 
 func (c *Client) CreatePrice(price *types.Price) error {
 	sess := c.GetSession()

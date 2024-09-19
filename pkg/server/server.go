@@ -94,6 +94,10 @@ func New(cfg *Config, deps *Deps) *Server {
 	mailing.Post("/finish/users-list", s.MailingFinishUsersListHandler)
 	mailing.Post("/update/user-state", s.MailingUpdateUserStateHandler)
 
+	addresses := api.Group("/addresses")
+	addresses.Post("/create", s.addressesCreateHandler)
+	addresses.Post("/check", s.addressesCheckHandler)
+
 	transactions := api.Group("/transactions")
 	transactions.Post("/create", s.TransactionsCreateHandler)
 

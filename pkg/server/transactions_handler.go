@@ -17,9 +17,9 @@ type TransactionsCreateRequest struct {
 
 func (req *TransactionsCreateRequest) validate() error {
 	whitelist := map[string]struct{}{
-		types.TransactionBlockchainBSC: {},
-		types.TransactionBlockchainETH: {},
-		types.TransactionBlockchainBTC: {},
+		types.BlockchainBSC: {},
+		types.BlockchainETH: {},
+		types.BlockchainBTC: {},
 	}
 
 	if _, ok := whitelist[req.Blockchain]; !ok {
@@ -59,9 +59,9 @@ func (s *Server) TransactionsCreateHandler(c *fiber.Ctx) error {
 	}
 
 	tickerMap := map[string]string{
-		types.TransactionBlockchainBSC: "BNBUSDT",
-		types.TransactionBlockchainETH: "ETHUSDT",
-		types.TransactionBlockchainBTC: "BTCUSDT",
+		types.BlockchainBSC: "BNBUSDT",
+		types.BlockchainETH: "ETHUSDT",
+		types.BlockchainBTC: "BTCUSDT",
 	}
 
 	if price, ok := prices[tickerMap[tx.Blockchain]]; ok {
