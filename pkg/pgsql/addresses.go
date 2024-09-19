@@ -27,8 +27,8 @@ func (c *Client) SelectAddress(addressKey string) (*types.Address, error) {
 	sess := c.GetSession()
 	address := &types.Address{}
 
-	q := `select * from addresses where address_key = ?;`
-	if err := sess.SelectBySql(q).LoadOne(&address); err != nil {
+	q := `select * from addresses where address_key = ?`
+	if err := sess.SelectBySql(q, addressKey).LoadOne(&address); err != nil {
 		return nil, fmt.Errorf("failed to select address: %w", err)
 	}
 
