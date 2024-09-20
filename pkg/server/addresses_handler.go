@@ -9,7 +9,6 @@ import (
 
 type addressesCreateRequest struct {
 	Blockchain string `json:"blockchain"`
-
 	AddressKey string `json:"address_key"`
 	Address    string `json:"address"`
 	BID        string `json:"bid"`
