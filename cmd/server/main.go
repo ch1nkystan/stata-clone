@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/gocraft/dbr/v2"
@@ -95,6 +96,10 @@ func createPostgresConnection(cfg PostgresConfig) (*dbr.Connection, error) {
 	if err := conn.Ping(); err != nil {
 		return nil, err
 	}
+
+	conn.DB.SetMaxOpenConns(10)
+	conn.DB.SetMaxIdleConns(5)
+	conn.DB.SetConnMaxLifetime(5 * time.Minute)
 
 	return conn, nil
 }
