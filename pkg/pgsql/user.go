@@ -22,6 +22,19 @@ func (c *Client) SelectUserByID(id int) (*types.User, error) {
 	return res, nil
 }
 
+func (c *Client) CountUsersByTelegramID(tid int64) (int, error) {
+	sess := c.GetSession()
+
+	var count int
+
+	q := `select count(*) from users where telegram_id = ?`
+	if _, err := sess.SelectBySql(q, tid).Load(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (c *Client) SelectUsersByTelegramID(tid int64) ([]*types.User, error) {
 	sess := c.GetSession()
 

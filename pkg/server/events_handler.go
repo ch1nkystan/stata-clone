@@ -75,7 +75,7 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 			}
 		}
 	} else {
-		seenTimes, err := s.deps.PG.SelectUsersByTelegramID(req.TelegramID)
+		seenTimes, err := s.deps.PG.CountUsersByTelegramID(req.TelegramID)
 		if err != nil {
 			return s.InternalServerError(c, err)
 		}
@@ -91,7 +91,7 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 			IsPremium:    req.IsPremium,
 			LanguageCode: req.LanguageCode,
 			EventCreated: types.EventTypeRegister,
-			Seen:         len(seenTimes),
+			Seen:         seenTimes,
 		}
 
 		user.ForwardSenderName = user.GenerateForwardSenderName()

@@ -9,7 +9,7 @@ func (c *Client) SelectBotByToken(token string) (*types.Bot, error) {
 
 	res := &types.Bot{}
 
-	q := `select * from bots where bot_token = ?`
+	q := `select * from bots where bot_token = ? limit 1`
 	if err := sess.SelectBySql(q, token).LoadOne(&res); err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (c *Client) SelectBotByID(id int) (*types.Bot, error) {
 
 	res := &types.Bot{}
 
-	q := `select * from bots where id = ?`
+	q := `select * from bots where id = ? limit 1`
 	if err := sess.SelectBySql(q, id).LoadOne(&res); err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (c *Client) SelectBotByUsername(username string) (*types.Bot, error) {
 
 	res := &types.Bot{}
 
-	q := `select * from bots where bot_username = ?`
+	q := `select * from bots where bot_username = ? limit 1`
 	if err := sess.SelectBySql(q, username).LoadOne(&res); err != nil {
 		return nil, err
 	}
