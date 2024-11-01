@@ -1,6 +1,9 @@
 package pgsql
 
 import (
+	"fmt"
+
+	"github.com/prosperofair/pkg/log"
 	"github.com/prosperofair/stata/pkg/types"
 )
 
@@ -57,13 +60,21 @@ func (c *Client) SelectBotDeeplinksByHash(botID int, hash string) ([]*types.Deep
 	return res, nil
 }
 
-func (c *Client) SelectBotDeeplinksByReferralID(botID int, referralID int64) ([]*types.Deeplink, error) {
+func (c *Client) SelectBotDeeplinksByReferralID(botID int, referralID int64, limit uint64) ([]*types.Deeplink, error) {
 	sess := c.GetSession()
 
 	res := make([]*types.Deeplink, 0)
 
 	q := `select * from deeplinks where bot_id = ? and referral_telegram_id = ? order by id desc`
-	if _, err := sess.SelectBySql(q, botID, referralID).Load(&res); err != nil {
+
+	stmt := sess.SelectBySql(q, botID, referralID)
+
+	if limit != 0 {
+		log.Info(fmt.Sprintf("limit: %d", limit))
+		stmt = stmt.Limit(limit)
+	}
+
+	if _, err := stmt.Load(&res); err != nil {
 		return nil, err
 	}
 

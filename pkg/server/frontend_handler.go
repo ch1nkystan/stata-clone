@@ -76,7 +76,7 @@ func (s *Server) conversionsByCampaignHandler(c *fiber.Ctx) error {
 		return s.InternalServerError(c, err)
 	}
 
-	deeplinks, err := s.deps.PG.SelectBotDeeplinksByReferralID(bot.ID, 0)
+	deeplinks, err := s.deps.PG.SelectBotDeeplinksByReferralID(bot.ID, 0, 0)
 	if err != nil {
 		return s.InternalServerError(c, err)
 	}

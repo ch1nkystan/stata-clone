@@ -67,7 +67,7 @@ func (s *Server) DeeplinksCreateHandler(c *fiber.Ctx) error {
 
 	if deeplink.ReferralTelegramID > 0 {
 		deeplink.Label = types.DeeplinkLabelReferral
-		deeplinks, err := s.deps.PG.SelectBotDeeplinksByReferralID(bot.ID, req.ReferralTelegramID)
+		deeplinks, err := s.deps.PG.SelectBotDeeplinksByReferralID(bot.ID, req.ReferralTelegramID, 1)
 		if err != nil {
 			return s.InternalServerError(c, err)
 		}
@@ -107,7 +107,7 @@ func (s *Server) DeeplinksListHandler(c *fiber.Ctx) error {
 			fmt.Errorf("select bot by token: %w", err))
 	}
 
-	deeplinks, err := s.deps.PG.SelectBotDeeplinksByReferralID(bot.ID, 0)
+	deeplinks, err := s.deps.PG.SelectBotDeeplinksByReferralID(bot.ID, 0, 0)
 	if err != nil {
 		return s.InternalServerError(c, err)
 	}
