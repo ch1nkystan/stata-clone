@@ -49,7 +49,7 @@ func (c *Client) SelectBotDeeplinksByHash(botID int, hash string) ([]*types.Deep
 
 	res := make([]*types.Deeplink, 0)
 
-	q := `select * from deeplinks where bot_id = ? and hash = ? order by id desc`
+	q := `select * from deeplinks where bot_id = ? and hash = ? order by id desc limit 1`
 	if _, err := sess.SelectBySql(q, botID, hash).Load(&res); err != nil {
 		return nil, err
 	}

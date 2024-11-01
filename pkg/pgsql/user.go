@@ -40,7 +40,7 @@ func (c *Client) SelectBotUsersByTelegramID(bid int, tid int64) ([]*types.User, 
 
 	res := make([]*types.User, 0)
 
-	q := `select * from users where bot_id = ? and telegram_id = ? order by id desc`
+	q := `select * from users where bot_id = ? and telegram_id = ? order by id desc limit 1`
 	if _, err := sess.SelectBySql(q, bid, tid).Load(&res); err != nil {
 		return nil, err
 	}
