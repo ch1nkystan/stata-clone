@@ -12,3 +12,6 @@ run-worker:
 
 run-ticker:
 	go run cmd/ticker/*.go
+
+run-online_snapshot:
+	go run cmd/online_snapshot/*.go
