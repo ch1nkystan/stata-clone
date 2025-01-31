@@ -374,42 +374,34 @@ func (c *Client) UpdateUserDepositState(id int) error {
 	return nil
 }
 
-type UserHeaders struct {
-	IP          string
-	UserAgent   string
-	CountryCode string
-	OSName      string
-	DeviceType  string
-}
-
-func (c *Client) UpdateUserHeadersInfo(id int, uh *UserHeaders) error {
+func (c *Client) UpdateUserHeadersInfo(id int, u *types.User) error {
 	sess := c.GetSession()
 
 	stmt := sess.Update("users")
 	update := false
 
-	if uh.IP != "" {
-		stmt.Set("ip", uh.IP)
+	if u.IP != "" {
+		stmt.Set("ip", u.IP)
 		update = true
 	}
 
-	if uh.UserAgent != "" {
-		stmt.Set("user_agent", uh.UserAgent)
+	if u.UserAgent != "" {
+		stmt.Set("user_agent", u.UserAgent)
 		update = true
 	}
 
-	if uh.CountryCode != "" {
-		stmt.Set("country_code", uh.CountryCode)
+	if u.CountryCode != "" {
+		stmt.Set("country_code", u.CountryCode)
 		update = true
 	}
 
-	if uh.OSName != "" {
-		stmt.Set("os_name", uh.OSName)
+	if u.OSName != "" {
+		stmt.Set("os_name", u.OSName)
 		update = true
 	}
 
-	if uh.DeviceType != "" {
-		stmt.Set("device_type", uh.DeviceType)
+	if u.DeviceType != "" {
+		stmt.Set("device_type", u.DeviceType)
 		update = true
 	}
 

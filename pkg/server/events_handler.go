@@ -10,7 +10,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/prosperofair/pkg/log"
-	"github.com/prosperofair/stata/pkg/pgsql"
 	"github.com/prosperofair/stata/pkg/types"
 )
 
@@ -275,7 +274,7 @@ func (s *Server) EventsSubmitLaunchHandler(c *fiber.Ctx) error {
 		uaInfo := uasurfer.Parse(req.UserAgent)
 
 		if err := s.deps.PG.UpdateUserHeadersInfo(users[0].ID,
-			&pgsql.UserHeaders{
+			&types.User{
 				IP:          req.IP,
 				UserAgent:   req.UserAgent,
 				CountryCode: record.Country.IsoCode,
