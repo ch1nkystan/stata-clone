@@ -1,7 +1,10 @@
 package main
 
+import "time"
+
 const (
-	WorkerFBToolFetcher = "fbtool-fetcher"
+	WorkerFBToolFetcher       = "fbtool-fetcher"
+	WorkerUsersOnlineSnapshot = "users-online-snapshot"
 )
 
 func NewConfig() Config {
@@ -23,8 +26,9 @@ type Config struct {
 type WorkerConfig struct {
 	Name string `env:"WORKER_NAME" envDefault:""`
 
-	SingleRun bool `env:"WORKER_SINGLE_RUN" envDefault:"true"`
-	DryRun    bool `env:"WORKER_DRY_RUN" envDefault:"false"`
+	SingleRun bool          `env:"WORKER_SINGLE_RUN" envDefault:"true"`
+	DryRun    bool          `env:"WORKER_DRY_RUN" envDefault:"false"`
+	Timeout   time.Duration `env:"WORKER_RUN_TIMEOUT" envDefault:"30s"`
 }
 
 type LoggerConfig struct {

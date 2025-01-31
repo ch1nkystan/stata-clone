@@ -44,15 +44,17 @@ func main() {
 
 	switch cfg.Worker.Name {
 	case WorkerFBToolFetcher:
-		if err := runWorker(worker.fbtoolFetcher, cfg.Worker.SingleRun); err != nil {
+		if err := runWorker(worker.fbtoolFetcher, cfg.Worker.Timeout, cfg.Worker.SingleRun); err != nil {
+			log.Fatal("failed to run worker", zap.Error(err))
+		}
+	case WorkerUsersOnlineSnapshot:
+		if err := runWorker(worker.usersOnlineSnapshot, cfg.Worker.Timeout, cfg.Worker.SingleRun); err != nil {
 			log.Fatal("failed to run worker", zap.Error(err))
 		}
 	}
 }
 
-func runWorker(f func() error, singleRun bool) error {
-	timeout := 30 * time.Second
-
+func runWorker(f func() error, timeout time.Duration, singleRun bool) error {
 	for {
 		log.Info("starting iteration...")
 		if err := f(); err != nil {
