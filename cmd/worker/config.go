@@ -3,8 +3,8 @@ package main
 import "time"
 
 const (
-	WorkerFBToolFetcher       = "fbtool-fetcher"
-	WorkerUsersOnlineSnapshot = "users-online-snapshot"
+	WorkerFBToolFetcher  = "fbtool-fetcher"
+	WorkerOnlineSnapshot = "online-snapshot"
 )
 
 func NewConfig() Config {

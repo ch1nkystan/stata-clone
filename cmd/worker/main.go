@@ -47,8 +47,8 @@ func main() {
 		if err := runWorker(worker.fbtoolFetcher, cfg.Worker.Timeout, cfg.Worker.SingleRun); err != nil {
 			log.Fatal("failed to run worker", zap.Error(err))
 		}
-	case WorkerUsersOnlineSnapshot:
-		if err := runWorker(worker.usersOnlineSnapshot, cfg.Worker.Timeout, cfg.Worker.SingleRun); err != nil {
+	case WorkerOnlineSnapshot:
+		if err := runWorker(worker.onlineSnapshot, cfg.Worker.Timeout, cfg.Worker.SingleRun); err != nil {
 			log.Fatal("failed to run worker", zap.Error(err))
 		}
 	}

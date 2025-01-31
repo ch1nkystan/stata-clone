@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (w *Worker) usersOnlineSnapshot() error {
+func (w *Worker) onlineSnapshot() error {
 
 	if err := w.pg.CreateUsersOnlineSnapshot(); err != nil {
 		log.Error("failed to create users online snapshot", zap.Error(err))
