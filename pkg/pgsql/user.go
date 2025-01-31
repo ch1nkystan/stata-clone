@@ -379,25 +379,35 @@ func (c *Client) UpdateUserHeadersInfo(id int, u *types.User) error {
 
 	stmt := sess.Update("users").
 		Set("messaged_at", "now()")
+	updated := false
 
 	if u.IP != "" {
 		stmt.Set("ip", u.IP)
+		updated = true
 	}
 
 	if u.UserAgent != "" {
 		stmt.Set("user_agent", u.UserAgent)
+		updated = true
 	}
 
 	if u.CountryCode != "" {
 		stmt.Set("country_code", u.CountryCode)
+		updated = true
 	}
 
 	if u.OSName != "" {
 		stmt.Set("os_name", u.OSName)
+		updated = true
 	}
 
 	if u.DeviceType != "" {
 		stmt.Set("device_type", u.DeviceType)
+		updated = true
+	}
+
+	if updated {
+		stmt.Set("updated_at", "now()")
 	}
 
 	stmt = stmt.Where("id = ?", id)
