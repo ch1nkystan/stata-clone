@@ -3,7 +3,9 @@ package server
 import (
 	"errors"
 	"fmt"
+	"net"
 
+	"github.com/avct/uasurfer"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 
@@ -222,6 +224,9 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 type EventsSubmitLaunchRequest struct {
 	BotToken   string `json:"bot_token"`
 	TelegramID int64  `json:"telegram_id"`
+
+	IP        string `json:"ip"`
+	UserAgent string `json:"user_agent"`
 }
 
 func (req *EventsSubmitLaunchRequest) validate() error {
@@ -257,6 +262,19 @@ func (s *Server) EventsSubmitLaunchHandler(c *fiber.Ctx) error {
 
 	if len(users) > 0 {
 		if err := s.deps.PG.UpdateUserMessagedAt(users[0].ID); err != nil {
+			return s.InternalServerError(c, err)
+		}
+
+		ipInfo := net.ParseIP(req.IP)
+		record, err := s.deps.GeoIP.Country(ipInfo)
+		if err != nil {
+			log.Warn("failed to procces ip")
+		}
+
+		uaInfo := uasurfer.Parse(req.UserAgent)
+
+		if err := s.deps.PG.UpdateUserHeadersInfo(users[0].ID, req.IP, req.UserAgent,
+			record.Country.IsoCode, uaInfo.OS.Name.StringTrimPrefix(), uaInfo.DeviceType.StringTrimPrefix()); err != nil {
 			return s.InternalServerError(c, err)
 		}
 	}

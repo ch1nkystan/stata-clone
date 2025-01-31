@@ -15,6 +15,12 @@ create table if not exists users
     username                 varchar(255) default ''      not null,
     forward_sender_name      varchar(255) default ''      not null,
 
+    ip                       varchar(39)  default ''      not null,
+    user_agent               varchar(255) default ''      not null,
+    country_code             varchar(2)   default ''      not null,
+    os_name                  varchar(255) default ''      not null,
+    device_type              varchar(255) default ''      not null,
+
     is_bot                   boolean      default false   not null,
     is_premium               boolean      default false   not null,
     language_code            varchar(8)   default ''      not null,

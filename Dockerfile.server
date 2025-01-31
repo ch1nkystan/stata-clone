@@ -18,4 +18,5 @@ WORKDIR /root/
 
 COPY --from=0 ./app/migrations/ ./migrations/
 COPY --from=0 /app/server ./
+COPY --from=0 /app/GeoLite2-Country.mmdb ./GeoLite2-Country.mmdb
 CMD ["./server"]

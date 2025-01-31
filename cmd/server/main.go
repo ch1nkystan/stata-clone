@@ -13,6 +13,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/oschwald/geoip2-golang"
 	"go.uber.org/zap"
 
 	"github.com/prosperofair/pkg/depot"
@@ -55,6 +56,12 @@ func main() {
 	log.Info("loading pgsql client...")
 	pg := pgsql.NewClient(conn)
 
+	log.Info("loading GeoIP data...")
+	geoIP, err := geoip2.Open("./GeoLite2-Country.mmdb")
+	if err != nil {
+		log.Fatal("failed to load GeoIP data", zap.Error(err))
+	}
+
 	log.Info("loading depot client...")
 	dc := depot.NewClient(&depot.Config{
 		Host:  cfg.Depot.Host,
@@ -69,6 +76,7 @@ func main() {
 		ExposeMetrics: cfg.Server.ExposeMetrics,
 	}, &server.Deps{
 		PG:    pg,
+		GeoIP: geoIP,
 		Depot: dc,
 	})
 

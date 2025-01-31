@@ -373,3 +373,36 @@ func (c *Client) UpdateUserDepositState(id int) error {
 
 	return nil
 }
+
+func (c *Client) UpdateUserHeadersInfo(id int, ip, userAgent, countryCode, osName, deviceType string) error {
+	sess := c.GetSession()
+
+	stmt := sess.Update("users")
+
+	if ip != "" {
+		stmt.Set("ip", ip)
+	}
+
+	if userAgent != "" {
+		stmt.Set("user_agent", userAgent)
+	}
+
+	if countryCode != "" {
+		stmt.Set("country_code", countryCode)
+	}
+
+	if osName != "" {
+		stmt.Set("os_name", osName)
+	}
+
+	if deviceType != "" {
+		stmt.Set("device_type", deviceType)
+	}
+
+	stmt.Set("updated_at", "now()").Where("id = ?", id)
+	if _, err := stmt.Exec(); err != nil {
+		return err
+	}
+
+	return nil
+}

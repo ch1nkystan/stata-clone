@@ -26,6 +26,12 @@ type User struct {
 	ForwardSenderName string `db:"forward_sender_name" json:"forward_sender_name"`
 	Username          string `db:"username" json:"username"`
 
+	IP          string `db:"ip" json:"ip"`
+	UserAgent   string `db:"user_agent" json:"user_agent"`
+	CountryCode string `db:"country_code" json:"country_code"`
+	OSName      string `db:"os_name" json:"os_name"`
+	DeviceType  string `db:"device_type" json:"device_type"`
+
 	IsBot        bool   `db:"is_bot" json:"is_bot"`
 	IsPremium    bool   `db:"is_premium" json:"is_premium"`
 	LanguageCode string `db:"language_code" json:"language_code"`

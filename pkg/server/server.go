@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/oschwald/geoip2-golang"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 
@@ -33,7 +34,8 @@ type Config struct {
 }
 
 type Deps struct {
-	PG *pgsql.Client
+	PG    *pgsql.Client
+	GeoIP *geoip2.Reader
 
 	Depot *depot.Client
 }
