@@ -400,6 +400,8 @@ func (c *Client) UpdateUserHeadersInfo(id int, u *types.User) error {
 		stmt.Set("device_type", u.DeviceType)
 	}
 
+	stmt = stmt.Where("id = ?", id)
+
 	if _, err := stmt.Exec(); err != nil {
 		return err
 	}
