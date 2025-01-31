@@ -377,39 +377,31 @@ func (c *Client) UpdateUserDepositState(id int) error {
 func (c *Client) UpdateUserHeadersInfo(id int, u *types.User) error {
 	sess := c.GetSession()
 
-	stmt := sess.Update("users")
-	update := false
+	stmt := sess.Update("users").
+		Set("messaged_at", "now()")
 
 	if u.IP != "" {
 		stmt.Set("ip", u.IP)
-		update = true
 	}
 
 	if u.UserAgent != "" {
 		stmt.Set("user_agent", u.UserAgent)
-		update = true
 	}
 
 	if u.CountryCode != "" {
 		stmt.Set("country_code", u.CountryCode)
-		update = true
 	}
 
 	if u.OSName != "" {
 		stmt.Set("os_name", u.OSName)
-		update = true
 	}
 
 	if u.DeviceType != "" {
 		stmt.Set("device_type", u.DeviceType)
-		update = true
 	}
 
-	if update {
-		stmt.Set("updated_at", "now()").Where("id = ?", id)
-		if _, err := stmt.Exec(); err != nil {
-			return err
-		}
+	if _, err := stmt.Exec(); err != nil {
+		return err
 	}
 
 	return nil
