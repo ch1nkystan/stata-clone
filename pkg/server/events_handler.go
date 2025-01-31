@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/prosperofair/pkg/log"
+	"github.com/prosperofair/stata/pkg/pgsql"
 	"github.com/prosperofair/stata/pkg/types"
 )
 
@@ -268,13 +269,19 @@ func (s *Server) EventsSubmitLaunchHandler(c *fiber.Ctx) error {
 		ipInfo := net.ParseIP(req.IP)
 		record, err := s.deps.GeoIP.Country(ipInfo)
 		if err != nil {
-			log.Warn("failed to procces ip")
+			log.Warn("failed to procces ip", zap.Error(err))
 		}
 
 		uaInfo := uasurfer.Parse(req.UserAgent)
 
-		if err := s.deps.PG.UpdateUserHeadersInfo(users[0].ID, req.IP, req.UserAgent,
-			record.Country.IsoCode, uaInfo.OS.Name.StringTrimPrefix(), uaInfo.DeviceType.StringTrimPrefix()); err != nil {
+		if err := s.deps.PG.UpdateUserHeadersInfo(users[0].ID,
+			&pgsql.UserHeaders{
+				IP:          req.IP,
+				UserAgent:   req.UserAgent,
+				CountryCode: record.Country.IsoCode,
+				OSName:      uaInfo.OS.Name.StringTrimPrefix(),
+				DeviceType:  uaInfo.DeviceType.StringTrimPrefix(),
+			}); err != nil {
 			return s.InternalServerError(c, err)
 		}
 	}

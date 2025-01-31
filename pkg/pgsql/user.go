@@ -374,34 +374,50 @@ func (c *Client) UpdateUserDepositState(id int) error {
 	return nil
 }
 
-func (c *Client) UpdateUserHeadersInfo(id int, ip, userAgent, countryCode, osName, deviceType string) error {
+type UserHeaders struct {
+	IP          string
+	UserAgent   string
+	CountryCode string
+	OSName      string
+	DeviceType  string
+}
+
+func (c *Client) UpdateUserHeadersInfo(id int, uh *UserHeaders) error {
 	sess := c.GetSession()
 
 	stmt := sess.Update("users")
+	update := false
 
-	if ip != "" {
-		stmt.Set("ip", ip)
+	if uh.IP != "" {
+		stmt.Set("ip", uh.IP)
+		update = true
 	}
 
-	if userAgent != "" {
-		stmt.Set("user_agent", userAgent)
+	if uh.UserAgent != "" {
+		stmt.Set("user_agent", uh.UserAgent)
+		update = true
 	}
 
-	if countryCode != "" {
-		stmt.Set("country_code", countryCode)
+	if uh.CountryCode != "" {
+		stmt.Set("country_code", uh.CountryCode)
+		update = true
 	}
 
-	if osName != "" {
-		stmt.Set("os_name", osName)
+	if uh.OSName != "" {
+		stmt.Set("os_name", uh.OSName)
+		update = true
 	}
 
-	if deviceType != "" {
-		stmt.Set("device_type", deviceType)
+	if uh.DeviceType != "" {
+		stmt.Set("device_type", uh.DeviceType)
+		update = true
 	}
 
-	stmt.Set("updated_at", "now()").Where("id = ?", id)
-	if _, err := stmt.Exec(); err != nil {
-		return err
+	if update {
+		stmt.Set("updated_at", "now()").Where("id = ?", id)
+		if _, err := stmt.Exec(); err != nil {
+			return err
+		}
 	}
 
 	return nil
