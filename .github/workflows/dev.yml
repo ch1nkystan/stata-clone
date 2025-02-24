@@ -22,7 +22,7 @@ jobs:
     - name: Build and tag Docker image
       run: |
         BRANCH_NAME=${GITHUB_REF#refs/heads/}
-        docker build -f Dockerfile.bot -t ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:server_${BRANCH_NAME} .
+        docker build -f Dockerfile.server -t ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:server_${BRANCH_NAME} .
 
     - name: Push Docker image to DigitalOcean
       run: |
