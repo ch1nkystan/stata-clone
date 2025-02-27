@@ -107,6 +107,11 @@ func New(cfg *Config, deps *Deps) *Server {
 	stats.Post("/mailing-state", s.StatsMailingStateHandler)
 	stats.Post("/users-count", s.StatsUsersCountHandler) // used by depot to get bots stats
 
+	analytics := api.Group("/analytics")
+
+	snapshot := analytics.Group("/snapshots")
+	snapshot.Post("/online", s.onlineSnapshotHandler)
+
 	// method used by frontend to get stats
 	f := s.App.Group("/f/api", s.apiMiddlewareFrontend)
 	f.Post("/stats/conversions-by-day", s.conversionsByDayHandler)

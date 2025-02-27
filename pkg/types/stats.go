@@ -42,3 +42,11 @@ type MetricRow struct {
 	LastPeriod interface{} `db:"last_period" json:"last_period"`
 	Diff       interface{} `db:"diff" json:"diff"`
 }
+
+type Snapshot struct {
+	ID        int       `db:"id" json:"id"`
+	Snapshot  string    `db:"snapshot" json:"snapshot"`
+	BotID     int       `db:"bot_id" json:"bot_id"`
+	Users     int       `db:"users" json:"users"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+}

@@ -31,7 +31,7 @@ func (req *addressesCreateRequest) validate() error {
 func (s *Server) addressesCreateHandler(c *fiber.Ctx) error {
 	req := &addressesCreateRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -67,7 +67,7 @@ func (req *addressesCheckRequest) validate() error {
 func (s *Server) addressesCheckHandler(c *fiber.Ctx) error {
 	req := &addressesCheckRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {

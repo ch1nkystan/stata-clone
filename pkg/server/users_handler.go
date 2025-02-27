@@ -27,7 +27,7 @@ func (req *UsersSearchRequest) validate() error {
 func (s *Server) UsersSearchHandler(c *fiber.Ctx) error {
 	req := &UsersSearchRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -97,7 +97,7 @@ func (req *UsersGetRequest) validate() error {
 func (s *Server) UsersGetHandler(c *fiber.Ctx) error {
 	req := &UsersGetRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -152,7 +152,7 @@ func (req *UsersSetDefaultChannelRequest) validate() error {
 func (s *Server) UsersSetDefaultChannelHandler(c *fiber.Ctx) error {
 	req := &UsersSetDefaultChannelRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -203,7 +203,7 @@ func (req *UsersUpdateTelegramChannelRequest) validate() error {
 func (s *Server) UsersUpdateTelegramChannelHandler(c *fiber.Ctx) error {
 	req := &UsersUpdateTelegramChannelRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {

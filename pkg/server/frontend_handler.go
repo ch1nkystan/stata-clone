@@ -64,7 +64,7 @@ type conversionsByPeriodResponse struct {
 func (s *Server) conversionsByCampaignHandler(c *fiber.Ctx) error {
 	req := &dateRangeRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -149,7 +149,7 @@ func (s *Server) conversionsByCampaignHandler(c *fiber.Ctx) error {
 func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 	req := &dateRangeRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -222,7 +222,7 @@ func (s *Server) conversionsByDayHandler(c *fiber.Ctx) error {
 func (s *Server) conversionsByPeriodHandler(c *fiber.Ctx) error {
 	req := &dateRangeRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -271,7 +271,7 @@ func (s *Server) conversionsByPeriodHandler(c *fiber.Ctx) error {
 func (s *Server) depositsLogHandler(c *fiber.Ctx) error {
 	req := &dateRangeRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -318,7 +318,7 @@ type dateRange struct {
 func (s *Server) metricsHandler(c *fiber.Ctx) error {
 	req := &dateRangeRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {

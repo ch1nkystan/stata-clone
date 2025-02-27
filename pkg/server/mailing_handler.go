@@ -39,7 +39,7 @@ func (req *MailingPrepareUsersListRequest) validate() error {
 func (s *Server) MailingPrepareUsersListHandler(c *fiber.Ctx) error {
 	req := &MailingPrepareUsersListRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -107,7 +107,7 @@ func (req *MailingUpdateUserStateRequest) validate() error {
 func (s *Server) MailingUpdateUserStateHandler(c *fiber.Ctx) error {
 	req := &MailingUpdateUserStateRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -141,7 +141,7 @@ func (req *MailingFinishUsersListRequest) validate() error {
 func (s *Server) MailingFinishUsersListHandler(c *fiber.Ctx) error {
 	req := &MailingFinishUsersListRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {

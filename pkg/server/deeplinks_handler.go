@@ -30,7 +30,7 @@ func (req *DeeplinksCreateRequest) validate() error {
 func (s *Server) DeeplinksCreateHandler(c *fiber.Ctx) error {
 	req := &DeeplinksCreateRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -98,7 +98,7 @@ type DeeplinksListResponse struct {
 func (s *Server) DeeplinksListHandler(c *fiber.Ctx) error {
 	req := &DeeplinksListRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
@@ -134,7 +134,7 @@ func (req *DeeplinksUpdateRequest) validate() error {
 func (s *Server) DeeplinksUpdateHandler(c *fiber.Ctx) error {
 	req := &DeeplinksUpdateRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {

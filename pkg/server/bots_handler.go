@@ -27,7 +27,7 @@ func (req *BotsRegisterRequest) validate() error {
 func (s *Server) BotsRegisterHandler(c *fiber.Ctx) error {
 	req := &BotsRegisterRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -62,7 +62,7 @@ type BotsImportResponse struct {
 func (s *Server) BotsImportHandler(c *fiber.Ctx) error {
 	req := &BotsImportRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	res := &BotsImportResponse{

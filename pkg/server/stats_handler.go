@@ -25,7 +25,7 @@ type StatsMailingStateResponse struct {
 func (s *Server) StatsMailingStateHandler(c *fiber.Ctx) error {
 	req := &StatsMailingStateRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	bot, err := s.deps.PG.SelectBotByToken(req.BotToken)
@@ -70,7 +70,7 @@ type StatsUsersCountResponse struct {
 func (s *Server) StatsUsersCountHandler(c *fiber.Ctx) error {
 	req := &StatsUsersCountRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	bots, err := s.deps.PG.SelectAllBots()

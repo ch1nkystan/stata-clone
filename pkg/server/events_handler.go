@@ -39,7 +39,7 @@ func (req *EventsSubmitUserRegisterRequest) validate() error {
 func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 	req := &EventsSubmitUserRegisterRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -147,7 +147,7 @@ func (req *EventsSubmitMessageRequest) validate() error {
 func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 	req := &EventsSubmitMessageRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -240,7 +240,7 @@ func (req *EventsSubmitLaunchRequest) validate() error {
 func (s *Server) EventsSubmitLaunchHandler(c *fiber.Ctx) error {
 	req := &EventsSubmitLaunchRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
@@ -308,7 +308,7 @@ func (req *EventsSubmitDepositRequest) validate() error {
 func (s *Server) EventsSubmitDepositHandler(c *fiber.Ctx) error {
 	req := &EventsSubmitDepositRequest{}
 	if err := c.BodyParser(&req); err != nil {
-		return s.InternalServerError(c, err)
+		return s.BadRequest(c, err)
 	}
 
 	if err := req.validate(); err != nil {
