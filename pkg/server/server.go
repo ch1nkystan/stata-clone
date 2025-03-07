@@ -112,7 +112,13 @@ func New(cfg *Config, deps *Deps) *Server {
 	snapshot := analytics.Group("/snapshots")
 	snapshot.Post("/online", s.onlineSnapshotHandler)
 
+	conversions := analytics.Group("/conversions")
+	conversions.Post("/by-day", s.conversionsByDayHandler)
+	conversions.Post("/by-period", s.conversionsByPeriodHandler)
+	conversions.Post("/by-campaign", s.conversionsByCampaignHandler)
+
 	// method used by frontend to get stats
+	// todo: remove later
 	f := s.App.Group("/f/api", s.apiMiddlewareFrontend)
 	f.Post("/stats/conversions-by-day", s.conversionsByDayHandler)
 	f.Post("/stats/conversions-by-period", s.conversionsByPeriodHandler)
