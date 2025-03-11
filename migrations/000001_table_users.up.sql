@@ -36,3 +36,5 @@ create table if not exists users
     created_at               timestamp    default now()   not null,
     updated_at               timestamp    default now()   not null
 );
+
+create index idx_users_created_at on users (created_at);
