@@ -181,25 +181,13 @@ func (c *Client) UpdateBotUsersTelegramChannel(botID int, hash string, tgchid in
 
 	q := `update users
 	set telegram_channel_id  = ?,
-		telegram_channel_url = ?
+		telegram_channel_url = ?,
+		subscribed = false,
+		subscribed_at = created_at,
+		unsubscribed_at = created_at
 	where bot_id = ?
 	  and depot_channel_hash = ?`
 	if _, err := sess.UpdateBySql(q, tgchid, tgchurl, botID, hash).Exec(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *Client) UpdateBotUserTelegramChannel(userID int, hash string, tgchid int64, tgchurl string) error {
-	sess := c.GetSession()
-
-	q := `update users
-	set telegram_channel_id  = ?,
-		telegram_channel_url = ?,
-		depot_channel_hash   = ?
-	where id = ?`
-	if _, err := sess.UpdateBySql(q, tgchid, tgchurl, hash, userID).Exec(); err != nil {
 		return err
 	}
 
@@ -331,6 +319,18 @@ func (c *Client) UpdateUserOnMessage(old, new *types.User) error {
 
 	if updated {
 		stmt.Set("updated_at", "now()")
+	}
+
+	if old.Subscribed != new.Subscribed {
+		stmt.Set("subscribed", new.Subscribed)
+
+		if new.Subscribed {
+			stmt.Set("subscribed_at", time.Now())
+		}
+
+		if !new.Subscribed && old.CreatedAt != old.SubscribedAt {
+			stmt.Set("unsubscribed_at", time.Now())
+		}
 	}
 
 	stmt = stmt.Where("id = ?", old.ID)

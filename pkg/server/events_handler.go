@@ -134,6 +134,8 @@ type EventsSubmitMessageRequest struct {
 	IsBot        bool   `json:"is_bot"`
 	IsPremium    bool   `json:"is_premium"`
 	LanguageCode string `json:"language_code"`
+
+	Subscribed bool `json:"subscribed"`
 }
 
 func (req *EventsSubmitMessageRequest) validate() error {
@@ -177,6 +179,7 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 		IsPremium:    req.IsPremium,
 		LanguageCode: req.LanguageCode,
 		EventCreated: types.EventTypeMessage,
+		Subscribed:   req.Subscribed,
 	}
 
 	user.ForwardSenderName = user.GenerateForwardSenderName()

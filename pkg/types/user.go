@@ -52,6 +52,10 @@ type User struct {
 	MessagedAt time.Time `db:"messaged_at" json:"messaged_at"`
 	CreatedAt  time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt  time.Time `db:"updated_at" json:"updated_at"`
+
+	Subscribed     bool      `db:"subscribed" json:"subscribed"`
+	SubscribedAt   time.Time `db:"subscribed_at" json:"subscribed_at"`
+	UnsubscribedAt time.Time `db:"unsubscribed_at" json:"unsubscribed_at"`
 }
 
 func (u *User) GenerateForwardSenderName() string {
