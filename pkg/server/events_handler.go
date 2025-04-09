@@ -317,6 +317,8 @@ func (s *Server) setBotChannelToNewBotUser(bot *types.Bot, user *types.User) err
 		return fmt.Errorf("failed to list bot active channels: %w", err)
 	}
 
+	log.Info("found channel", zap.Any("channel", channel))
+
 	if channel != nil {
 		user.DepotChannelHash = channel.Hash
 		user.TelegramChannelID = channel.TelegramChannelID
