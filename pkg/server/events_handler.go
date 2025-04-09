@@ -99,7 +99,8 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 		user.ForwardSenderName = user.GenerateForwardSenderName()
 
 		if err := s.setBotChannelToNewBotUser(bot, user); err != nil {
-			return s.InternalServerError(c, err)
+			log.Error("failed to set bot channel to new user",
+				zap.String("bot_token", bot.BotToken), zap.Error(err))
 		}
 
 		if err := s.deps.PG.CreateUser(user); err != nil {
@@ -175,7 +176,8 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 		oldUser := users[0]
 		if oldUser.DepotChannelHash == "" {
 			if err := s.setBotChannelToNewBotUser(bot, user); err != nil {
-				return s.InternalServerError(c, err)
+				log.Error("failed to set bot channel to new user",
+					zap.String("bot_token", bot.BotToken), zap.Error(err))
 			}
 		}
 
@@ -186,7 +188,8 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 		log.Info("user updated", zap.Time("messaged_at", users[0].MessagedAt), zap.Int("id", users[0].ID))
 	} else {
 		if err := s.setBotChannelToNewBotUser(bot, user); err != nil {
-			return s.InternalServerError(c, err)
+			log.Error("failed to set bot channel to new user",
+				zap.String("bot_token", bot.BotToken), zap.Error(err))
 		}
 
 		if err := s.deps.PG.CreateUser(user); err != nil {
@@ -309,10 +312,21 @@ func (s *Server) EventsSubmitDepositHandler(c *fiber.Ctx) error {
 }
 
 func (s *Server) setBotChannelToNewBotUser(bot *types.Bot, user *types.User) error {
+	channel, err := s.deps.Depot.GetBotChannelByTDR(bot.BotToken)
+	if err != nil {
+		return fmt.Errorf("failed to list bot active channels: %w", err)
+	}
+
+	if channel != nil {
+		user.DepotChannelHash = channel.Hash
+		user.TelegramChannelID = channel.TelegramChannelID
+		user.TelegramChannelURL = channel.TelegramChannelURL
+	}
+
 	if bot.Binding {
 		botIDs, err := s.deps.PG.SelectBotIDsByTraceUUID(bot.TraceUUID)
 		if err != nil {
-			return fmt.Errorf("failed to list tracing bots ID: %w", err)
+			return fmt.Errorf("failed to list bots by trace uuid: %w", err)
 		}
 
 		oldestUser, err := s.deps.PG.SelectBotsOldestUserByTelegramID(user.TelegramID, botIDs)
@@ -323,17 +337,6 @@ func (s *Server) setBotChannelToNewBotUser(bot *types.Bot, user *types.User) err
 		user.DepotChannelHash = oldestUser.DepotChannelHash
 		user.TelegramChannelID = oldestUser.TelegramChannelID
 		user.TelegramChannelURL = oldestUser.TelegramChannelURL
-	} else {
-		channel, err := s.deps.Depot.GetBotChannelByTDR(bot.BotToken)
-		if err != nil {
-			return fmt.Errorf("failed to list bot active channels: %w", err)
-		}
-
-		if channel != nil {
-			user.DepotChannelHash = channel.Hash
-			user.TelegramChannelID = channel.TelegramChannelID
-			user.TelegramChannelURL = channel.TelegramChannelURL
-		}
 	}
 
 	log.Info("creating user",
