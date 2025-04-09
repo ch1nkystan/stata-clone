@@ -98,22 +98,9 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 
 		user.ForwardSenderName = user.GenerateForwardSenderName()
 
-		channel, err := s.deps.Depot.GetBotChannelByTDR(bot.BotToken)
-		if err != nil {
-			log.Error("failed to list bot active channels", zap.Error(err))
+		if err := s.setBotChannelToNewBotUser(bot, user); err != nil {
+			return s.InternalServerError(c, err)
 		}
-
-		if channel != nil {
-			user.DepotChannelHash = channel.Hash
-			user.TelegramChannelID = channel.TelegramChannelID
-			user.TelegramChannelURL = channel.TelegramChannelURL
-		}
-
-		log.Info("creating user",
-			zap.String("bot_token", bot.BotToken),
-			zap.Any("channel", channel),
-			zap.Int64("telegram_id", user.TelegramID),
-		)
 
 		if err := s.deps.PG.CreateUser(user); err != nil {
 			return s.InternalServerError(c, err)
@@ -187,15 +174,8 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 	if len(users) > 0 {
 		oldUser := users[0]
 		if oldUser.DepotChannelHash == "" {
-			channel, err := s.deps.Depot.GetBotChannelByTDR(bot.BotToken)
-			if err != nil {
-				log.Error("failed to list bot active channels", zap.Error(err))
-			}
-
-			if channel != nil {
-				user.DepotChannelHash = channel.Hash
-				user.TelegramChannelID = channel.TelegramChannelID
-				user.TelegramChannelURL = channel.TelegramChannelURL
+			if err := s.setBotChannelToNewBotUser(bot, user); err != nil {
+				return s.InternalServerError(c, err)
 			}
 		}
 
@@ -205,15 +185,8 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 
 		log.Info("user updated", zap.Time("messaged_at", users[0].MessagedAt), zap.Int("id", users[0].ID))
 	} else {
-		channel, err := s.deps.Depot.GetBotChannelByTDR(bot.BotToken)
-		if err != nil {
-			log.Error("failed to list bot active channels", zap.Error(err))
-		}
-
-		if channel != nil {
-			user.DepotChannelHash = channel.Hash
-			user.TelegramChannelID = channel.TelegramChannelID
-			user.TelegramChannelURL = channel.TelegramChannelURL
+		if err := s.setBotChannelToNewBotUser(bot, user); err != nil {
+			return s.InternalServerError(c, err)
 		}
 
 		if err := s.deps.PG.CreateUser(user); err != nil {
@@ -333,4 +306,41 @@ func (s *Server) EventsSubmitDepositHandler(c *fiber.Ctx) error {
 	}
 
 	return s.ResponseOK(c)
+}
+
+func (s *Server) setBotChannelToNewBotUser(bot *types.Bot, user *types.User) error {
+	if bot.Binding {
+		botIDs, err := s.deps.PG.SelectBotIDsByTraceUUID(bot.TraceUUID)
+		if err != nil {
+			return fmt.Errorf("failed to list tracing bots ID: %w", err)
+		}
+
+		oldestUser, err := s.deps.PG.SelectBotsOldestUserByTelegramID(user.TelegramID, botIDs)
+		if err != nil {
+			return fmt.Errorf("failed to list bots older users by telegram ID: %w", err)
+		}
+
+		user.DepotChannelHash = oldestUser.DepotChannelHash
+		user.TelegramChannelID = oldestUser.TelegramChannelID
+		user.TelegramChannelURL = oldestUser.TelegramChannelURL
+	} else {
+		channel, err := s.deps.Depot.GetBotChannelByTDR(bot.BotToken)
+		if err != nil {
+			return fmt.Errorf("failed to list bot active channels: %w", err)
+		}
+
+		if channel != nil {
+			user.DepotChannelHash = channel.Hash
+			user.TelegramChannelID = channel.TelegramChannelID
+			user.TelegramChannelURL = channel.TelegramChannelURL
+		}
+	}
+
+	log.Info("creating user",
+		zap.String("bot_token", bot.BotToken),
+		zap.String("depot_channel_hash", user.DepotChannelHash),
+		zap.Int64("telegram_id", user.TelegramID),
+	)
+
+	return nil
 }

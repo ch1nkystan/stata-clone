@@ -1,6 +1,7 @@
 package pgsql
 
 import (
+	"github.com/google/uuid"
 	"github.com/prosperofair/stata/pkg/types"
 )
 
@@ -33,6 +34,19 @@ func (c *Client) SelectAllBots() (map[int]*types.Bot, error) {
 	}
 
 	return bots, nil
+}
+
+func (c *Client) SelectBotIDsByTraceUUID(traceUUID uuid.UUID) ([]int, error) {
+	sess := c.GetSession()
+
+	res := make([]int, 0)
+
+	q := `select id from bots where trace_uuid = ?`
+	if _, err := sess.SelectBySql(q, traceUUID).Load(&res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (c *Client) SelectBotByID(id int) (*types.Bot, error) {
@@ -71,8 +85,31 @@ func (c *Client) CreateBot(bot *types.Bot) error {
 			"bot_username",
 			"bot_type",
 			"bid",
+			"trace_uuid",
 		).
 		Record(bot).Exec(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) UpdateBotBinding(botToken string, binding bool) error {
+	sess := c.GetSession()
+
+	q := `update bots set binding = ? where bot_token = ?`
+	if _, err := sess.UpdateBySql(q, binding, botToken).Exec(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) UpdateBotTraceUUID(botToken string, traceUUID uuid.UUID) error {
+	sess := c.GetSession()
+
+	q := `update bots set trace_uuid = ? where bot_token = ?`
+	if _, err := sess.UpdateBySql(q, traceUUID, botToken).Exec(); err != nil {
 		return err
 	}
 

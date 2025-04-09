@@ -3,18 +3,21 @@ package server
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/prosperofair/pkg/log"
 	"github.com/prosperofair/stata/pkg/types"
 	"go.uber.org/zap"
 )
 
 type BotsRegisterRequest struct {
-	APIKey      string `json:"api_key"`
-	BotUsername string `json:"bot_username"`
-	BotType     string `json:"bot_type"`
-	BuyerID     string `json:"bid"`
+	APIKey      string    `json:"api_key"`
+	BotUsername string    `json:"bot_username"`
+	BotType     string    `json:"bot_type"`
+	BuyerID     string    `json:"bid"`
+	TraceUUID   uuid.UUID `json:"trace_uuid"`
 }
 
 type BotsRegisterResponse struct {
@@ -42,6 +45,7 @@ func (s *Server) BotsRegisterHandler(c *fiber.Ctx) error {
 		BotUsername: req.BotUsername,
 		BotType:     req.BotType,
 		BID:         req.BuyerID,
+		TraceUUID:   req.TraceUUID,
 	}
 
 	if err := s.deps.PG.CreateBot(bot); err != nil {
@@ -81,6 +85,7 @@ func (s *Server) BotsImportHandler(c *fiber.Ctx) error {
 			BotToken:    hex.EncodeToString(hash[:]),
 			BotUsername: bot.BotUsername,
 			BotType:     bot.BotType,
+			TraceUUID:   bot.TraceUUID,
 		}); err != nil {
 			log.Error("failed to create bot", zap.Error(err))
 			continue
@@ -90,4 +95,41 @@ func (s *Server) BotsImportHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(res)
+}
+
+type BotsUpdateBindingRequest struct {
+	BotToken  string    `json:"bot_token"`
+	Binding   bool      `json:"binding"`
+	TraceUUID uuid.UUID `json:"trace_uuid"`
+}
+
+func (req *BotsUpdateBindingRequest) validate() error {
+	if req.BotToken == "" {
+		return errors.New("bot_token is required")
+	}
+
+	return nil
+}
+
+func (s *Server) BotsUpdateBindingHandler(c *fiber.Ctx) error {
+	req := &BotsUpdateBindingRequest{}
+	if err := c.BodyParser(&req); err != nil {
+		return s.BadRequest(c, err)
+	}
+
+	if err := req.validate(); err != nil {
+		return s.BadRequest(c, err)
+	}
+
+	if err := s.deps.PG.UpdateBotBinding(req.BotToken, req.Binding); err != nil {
+		return s.InternalServerError(c, err)
+	}
+
+	if req.TraceUUID != uuid.Nil {
+		if err := s.deps.PG.UpdateBotTraceUUID(req.BotToken, req.TraceUUID); err != nil {
+			return s.InternalServerError(c, err)
+		}
+	}
+
+	return s.ResponseOK(c)
 }

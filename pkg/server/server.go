@@ -73,6 +73,7 @@ func New(cfg *Config, deps *Deps) *Server {
 	bot := api.Group("/bots")
 	bot.Post("/register", s.BotsRegisterHandler)
 	bot.Post("/import", s.BotsImportHandler)
+	bot.Post("/update/binding", s.BotsUpdateBindingHandler)
 
 	user := api.Group("/users")
 	user.Post("/search", s.UsersSearchHandler)
