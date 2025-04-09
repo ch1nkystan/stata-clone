@@ -103,6 +103,12 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 				zap.String("bot_token", bot.BotToken), zap.Error(err))
 		}
 
+		log.Info("creating user",
+			zap.String("bot_token", bot.BotToken),
+			zap.String("depot_channel_hash", user.DepotChannelHash),
+			zap.Int64("telegram_id", user.TelegramID),
+		)
+
 		if err := s.deps.PG.CreateUser(user); err != nil {
 			return s.InternalServerError(c, err)
 		}
@@ -179,6 +185,12 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 				log.Error("failed to set bot channel to new user",
 					zap.String("bot_token", bot.BotToken), zap.Error(err))
 			}
+
+			log.Info("updating user user",
+				zap.String("bot_token", bot.BotToken),
+				zap.String("depot_channel_hash", user.DepotChannelHash),
+				zap.Int64("telegram_id", user.TelegramID),
+			)
 		}
 
 		if err := s.deps.PG.UpdateUserOnMessage(users[0], user); err != nil {
@@ -191,6 +203,12 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 			log.Error("failed to set bot channel to new user",
 				zap.String("bot_token", bot.BotToken), zap.Error(err))
 		}
+
+		log.Info("creating user",
+			zap.String("bot_token", bot.BotToken),
+			zap.String("depot_channel_hash", user.DepotChannelHash),
+			zap.Int64("telegram_id", user.TelegramID),
+		)
 
 		if err := s.deps.PG.CreateUser(user); err != nil {
 			return s.InternalServerError(c, err)
@@ -340,12 +358,6 @@ func (s *Server) setBotChannelToNewBotUser(bot *types.Bot, user *types.User) err
 		user.TelegramChannelID = oldestUser.TelegramChannelID
 		user.TelegramChannelURL = oldestUser.TelegramChannelURL
 	}
-
-	log.Info("creating user",
-		zap.String("bot_token", bot.BotToken),
-		zap.String("depot_channel_hash", user.DepotChannelHash),
-		zap.Int64("telegram_id", user.TelegramID),
-	)
 
 	return nil
 }

@@ -54,7 +54,7 @@ func (c *Client) SelectBotsOldestUserByTelegramID(tid int64, BIDs []int) (*types
 	res := &types.User{}
 
 	q := `select * from users where telegram_id = ? and bot_id in ? order by id limit 1`
-	if _, err := sess.SelectBySql(q, tid, BIDs).Load(&res); err != nil {
+	if err := sess.SelectBySql(q, tid, BIDs).LoadOne(&res); err != nil {
 		return nil, err
 	}
 
