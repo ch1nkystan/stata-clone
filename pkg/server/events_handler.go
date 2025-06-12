@@ -129,7 +129,7 @@ type EventsSubmitMessageRequest struct {
 	IsPremium    bool   `json:"is_premium"`
 	LanguageCode string `json:"language_code"`
 
-	Subscribed bool `json:"subscribed"`
+	Subscribed *bool `json:"subscribed"`
 }
 
 func (req *EventsSubmitMessageRequest) validate() error {
@@ -173,13 +173,19 @@ func (s *Server) EventsSubmitMessageHandler(c *fiber.Ctx) error {
 		IsPremium:    req.IsPremium,
 		LanguageCode: req.LanguageCode,
 		EventCreated: types.EventTypeMessage,
-		Subscribed:   req.Subscribed,
 	}
 
 	user.ForwardSenderName = user.GenerateForwardSenderName()
 
 	if len(users) > 0 {
 		oldUser := users[0]
+
+		if req.Subscribed != nil {
+			user.Subscribed = *req.Subscribed
+		} else {
+			user.Subscribed = oldUser.Subscribed
+		}
+
 		if oldUser.DepotChannelHash == "" {
 			if err := s.setBotChannelToNewBotUser(bot, user); err != nil {
 				log.Error("failed to set bot channel to new user",
