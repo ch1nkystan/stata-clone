@@ -7,6 +7,7 @@ import (
 
 	"github.com/avct/uasurfer"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/prosperofair/pkg/log"
@@ -67,6 +68,21 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 
 	if len(deeplinks) > 0 {
 		deeplinkID = deeplinks[0].ID
+	}
+
+	// check if hash is uuid
+	if uuidHash, err := uuid.Parse(req.Hash); err == nil {
+		if uuidHash.String() != "00000000-0000-0000-0000-000000000000" {
+			pl, err := s.deps.PG.SelectPixelLink(uuidHash.String())
+			if err != nil {
+				log.Error("failed to select pixel link by hash", zap.String("hash", uuidHash.String()))
+			}
+
+			if pl != nil {
+				sendFacebookEvent(pl)
+				deeplinkID = pl.DeeplinkID
+			}
+		}
 	}
 
 	if len(users) > 0 {

@@ -92,6 +92,21 @@ func New(cfg *Config, deps *Deps) *Server {
 	event.Post("/submit/launch", s.EventsSubmitLaunchHandler)
 	event.Post("/submit/deposit", s.EventsSubmitDepositHandler)
 
+	// curl -X POST "https://graph.facebook.com/v19.0/1218223109585855/events?access_token=EAAOeQkagSuUBO95EncpCvoMEwv5rbiEfmwBULdShZAZBl8keKaTH5sHQkbqScu8wZBUjLm4OZAk96fNMae0tZAsf65oitYWD9iDWhZCpL8n0wtz6vghZBgmZAZCXqxVzOD1Igz1IZBRV3wbCZCP2On9uYDpZA0nijV1i7unAqv3TDcmT0RjNxVQ0D7ZAK1nOa8CZAn8ZC9EQgZDZD" \
+	// -H "Content-Type: application/json" \
+	// -d '{
+	//   "data": [
+	//     {
+	//       "event_name": "Subscribe",
+	//       "event_id": "subscribe_134abc",
+	//       "event_time": "1751038742",
+	//       "user_data": {
+	//         "fbp": "fb.1.1751036105801.449382222908736931"
+	//       },
+	//     }
+	//   ]
+	// }'
+
 	mailing := api.Group("/mailing")
 	mailing.Post("/prepare/users-list", s.MailingPrepareUsersListHandler)
 	mailing.Post("/finish/users-list", s.MailingFinishUsersListHandler)

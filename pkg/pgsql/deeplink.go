@@ -93,3 +93,20 @@ func (c *Client) SelectBotDeeplinksByLabel(botID int, label string) ([]*types.De
 
 	return res, nil
 }
+
+func (c *Client) SelectPixelLink(inviteUUID string) (*types.PixelLink, error) {
+	sess := c.GetSession()
+
+	res := make([]*types.PixelLink, 0)
+
+	q := `select * from pixel_links where invite_uuid = ? order by id desc limit 1`
+	if _, err := sess.SelectBySql(q, inviteUUID).Load(&res); err != nil {
+		return nil, err
+	}
+
+	if len(res) == 0 {
+		return nil, nil
+	}
+
+	return res[0], nil
+}

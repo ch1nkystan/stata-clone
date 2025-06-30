@@ -3,6 +3,8 @@ package types
 import (
 	"math/rand"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -38,4 +40,19 @@ func GenerateDeeplinkHash() string {
 		key += string(rs[rand.Intn(lenOfArray)])
 	}
 	return key
+}
+
+type PixelLink struct {
+	ID int `json:"id" db:"id"`
+
+	FBAccessMarker string `json:"fb_access_marker" db:"fb_access_marker"`
+	FBPixelID      int64  `json:"fb_pixel_id" db:"fb_pixel_id"`
+	FBC            string `json:"fbc" db:"fbc"`
+	FBP            string `json:"fbp" db:"fbp"`
+	DeeplinkID     int    `json:"deeplink_id" db:"deeplink_id"`
+	DeeplinkHash   string `json:"deeplink_hash" db:"deeplink_hash"`
+
+	InviteUUID uuid.UUID `json:"invite_uuid" db:"invite_uuid"`
+
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
