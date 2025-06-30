@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/prosperofair/stata/pkg/types"
@@ -22,13 +23,13 @@ type FacebookEventsRequest struct {
 }
 
 func sendFacebookEvent(pl *types.PixelLink) {
-	url := "https://graph.facebook.com/v19.0/" + string(pl.FBPixelID) + "/events?access_token=" + pl.FBAccessMarker
+	url := "https://graph.facebook.com/v19.0/" + strconv.FormatInt(pl.FBPixelID, 10) + "/events?access_token=" + pl.FBAccessMarker
 
 	reqBody := FacebookEventsRequest{
 		Data: []FacebookEvent{
 			{
 				EventName: "Lead",
-				EventTime: string(time.Now().Unix()),
+				EventTime: strconv.FormatInt(time.Now().Unix(), 10),
 				UserData: map[string]interface{}{
 					"fbp": pl.FBP,
 					"fbc": pl.FBC,
