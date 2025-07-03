@@ -1,6 +1,10 @@
 package types
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 const (
 	UserMailingMaxFailedAttempts = 3
@@ -52,6 +56,8 @@ type User struct {
 	MessagedAt time.Time `db:"messaged_at" json:"messaged_at"`
 	CreatedAt  time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt  time.Time `db:"updated_at" json:"updated_at"`
+
+	InviteUUID uuid.UUID `db:"invite_uuid" json:"invite_uuid"`
 
 	Subscribed     bool      `db:"subscribed" json:"subscribed"`
 	SubscribedAt   time.Time `db:"subscribed_at" json:"subscribed_at"`

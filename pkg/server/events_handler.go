@@ -70,6 +70,8 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 		deeplinkID = deeplinks[0].ID
 	}
 
+	inviteUUID := "00000000-0000-0000-0000-000000000000"
+
 	// check if hash is uuid
 	if uuidHash, err := uuid.Parse(req.Hash); err == nil {
 		if uuidHash.String() != "00000000-0000-0000-0000-000000000000" {
@@ -81,6 +83,7 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 			if pl != nil {
 				sendFacebookEvent(pl)
 				deeplinkID = pl.DeeplinkID
+				inviteUUID = uuidHash.String()
 			}
 		}
 	}
@@ -110,6 +113,7 @@ func (s *Server) EventsSubmitUserRegisterHandler(c *fiber.Ctx) error {
 			LanguageCode: req.LanguageCode,
 			EventCreated: types.EventTypeRegister,
 			Seen:         seenTimes,
+			InviteUUID:   uuid.MustParse(inviteUUID),
 		}
 
 		user.ForwardSenderName = user.GenerateForwardSenderName()

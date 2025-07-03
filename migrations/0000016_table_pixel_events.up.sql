@@ -15,6 +15,8 @@ create table if not exists pixel_links
     created_at       timestamp    default now() not null
 );
 
+alter table users add column invite_uuid uuid not null default '00000000-0000-0000-0000-000000000000';
+
 CREATE INDEX IF NOT EXISTS idx_pixel_links_deeplink_id ON pixel_links(deeplink_id);
 CREATE INDEX IF NOT EXISTS idx_pixel_links_fb_access_marker ON pixel_links(fb_access_marker);
 CREATE INDEX IF NOT EXISTS idx_pixel_links_fb_pixel_id ON pixel_links(fb_pixel_id);
