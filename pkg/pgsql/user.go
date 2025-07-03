@@ -259,6 +259,7 @@ func (c *Client) CreateUser(user *types.User) error {
 			"is_premium",
 			"language_code",
 			"event_created",
+			"invite_uuid",
 		).
 		Record(user).Exec(); err != nil {
 		return err
