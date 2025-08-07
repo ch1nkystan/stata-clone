@@ -50,3 +50,19 @@ type Snapshot struct {
 	Users     int       `db:"users" json:"users"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
+
+type LeadByCampaignRow struct {
+	Label             string  `db:"label" json:"label"`
+	Total             int     `db:"total" json:"total"`
+	Unique            int     `db:"unique" json:"unique"`
+	UniquenessRatio   float64 `db:"uniquenes_ratio" json:"uniquenes_ratio"`
+	Deposited         int     `db:"deposited" json:"deposited"`
+	DepositedRatio    float64 `db:"deposited_ratio" json:"deposited_ratio"`
+	TotalSpend        float64 `db:"total_spend" json:"total_spend"`
+	DepositsSum       float64 `db:"deposits_sum" json:"deposits_sum"`
+	DepositsTotal     int     `db:"deposits_total" json:"deposits_total"`
+	CPU               float64 `db:"cpu" json:"cpu"`
+	DepositsPerPerson float64 `db:"deposits_per_person" json:"deposits_per_person"`
+	DepositPrice      float64 `db:"deposit_price" json:"deposit_price"`
+	PNL               float64 `db:"pnl" json:"pnl"`
+}

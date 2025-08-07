@@ -125,6 +125,9 @@ func New(cfg *Config, deps *Deps) *Server {
 
 	analytics := api.Group("/analytics")
 
+	reports := analytics.Group("/reports")
+	reports.Post("/leads-by-campaign", s.reportsLeadsByCampaignHandler)
+
 	snapshot := analytics.Group("/snapshots")
 	snapshot.Post("/online", s.onlineSnapshotHandler)
 
