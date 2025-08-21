@@ -17,14 +17,14 @@ jobs:
       uses: docker/setup-buildx-action@v2
 
     - name: Log in to DigitalOcean Container Registry
-      run: echo "${{ secrets.DO_REGISTRY_PASS }}" | docker login --username ${{ secrets.DO_REGISTRY_USER }} --password-stdin ${{ secrets.DO_REGISTY_URL }}
+      run: echo "${{ secrets.DO_REGISTRY_PASS }}" | docker login --username ${{ secrets.DO_REGISTRY_USER }} --password-stdin ${{ secrets.DO_REGISTRY_URL }}
 
     - name: Build and tag Docker image
       run: |
         BRANCH_NAME=${GITHUB_REF#refs/heads/}
-        docker build -f Dockerfile.server -t ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:server_${BRANCH_NAME} .
+        docker build -f Dockerfile.server -t ${{ secrets.DO_REGISTRY_URL }}/trendtonic/stata:server_${BRANCH_NAME} .
 
     - name: Push Docker image to DigitalOcean
       run: |
         BRANCH_NAME=${GITHUB_REF#refs/heads/}
-        docker push ${{ secrets.DO_REGISTY_URL }}/trendtonic/stata:server_${BRANCH_NAME}
+        docker push ${{ secrets.DO_REGISTRY_URL }}/trendtonic/stata:server_${BRANCH_NAME}
