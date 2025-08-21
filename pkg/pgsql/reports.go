@@ -18,15 +18,14 @@ func (c *Client) SelectLeadsByCampaign(token string, start, end time.Time) ([]*t
        sum(case when users.seen < 1 then 1 else 0 end)  as users_unique,
        sum(case when users.deposited then 1 else 0 end) as users_deposited,
        sum(users.deposits_sum)                          as deposits_sum,
-       sum(users.deposits_total)                        as deposits_total,
-       date_trunc('day', users.created_at)              AS day
+       sum(users.deposits_total)                        as deposits_total
 FROM users
          JOIN bots b ON b.id = users.bot_id
          JOIN deeplinks d ON d.id = users.deeplink_id
 WHERE b.bot_token = ?
   AND date_trunc('day', users.created_at) BETWEEN date ?
     AND date ?
-GROUP BY d.label, day
+GROUP BY d.label
 order by users_total desc;
 `
 	if _, err := sess.SelectBySql(q, token,
