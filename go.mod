@@ -1,6 +1,6 @@
 module github.com/prosperofair/stata
 
-go 1.22
+go 1.23.0
 
 toolchain go1.24.6
 
@@ -16,7 +16,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/oschwald/geoip2-golang v1.11.0
 	github.com/prometheus/client_golang v1.17.0
-	github.com/prosperofair/pkg v0.0.0-20240531155802-b9eb6bcca850
+	github.com/prosperofair/pkg v0.0.0-20250821130837-cbdcf9a57518
 	go.uber.org/zap v1.26.0
 )
 
@@ -27,7 +27,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
@@ -42,6 +42,6 @@ require (
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 )

@@ -8,42 +8,26 @@ import (
 	"github.com/prosperofair/stata/pkg/types"
 )
 
-type reportsLeadsByCampaignRequest struct {
-	BotToken string `json:"bot_token"`
-
-	StartAt string    `json:"start_at"`
-	Start   time.Time `json:"-"`
-
-	EndAt string    `json:"end_at"`
-	End   time.Time `json:"-"`
+type reportsFilterRequest struct {
+	BotToken string    `json:"bot_token"`
+	StartAt  time.Time `json:"start_at"`
+	EndAt    time.Time `json:"end_at"`
 }
 
-func (req *reportsLeadsByCampaignRequest) validate() error {
+func (req *reportsFilterRequest) validate() error {
 	if req.BotToken == "" {
 		return errors.New("bot_token is empty")
 	}
-
-	sat, err := time.Parse(time.DateOnly, req.StartAt)
-	if err != nil {
-		sat = time.Now().AddDate(0, -1, 0)
-	}
-	req.Start = sat
-
-	eat, err := time.Parse(time.DateOnly, req.EndAt)
-	if err != nil {
-		eat = time.Now()
-	}
-	req.End = eat
 
 	return nil
 }
 
 type reportsLeadsByCampaignResponse struct {
-	Leads []*types.LeadByCampaignRow `json:"leads"`
+	Data []*types.LeadsByCampaignRow `json:"data"`
 }
 
-func (s *Server) reportsLeadsByCampaignHandler(c *fiber.Ctx) error {
-	req := &reportsLeadsByCampaignRequest{}
+func (s *Server) reportsLeadsByCampaign(c *fiber.Ctx) error {
+	req := &reportsFilterRequest{}
 	if err := c.BodyParser(&req); err != nil {
 		return s.BadRequest(c, err)
 	}
@@ -52,13 +36,13 @@ func (s *Server) reportsLeadsByCampaignHandler(c *fiber.Ctx) error {
 		return s.BadRequest(c, err)
 	}
 
-	leads, err := s.deps.PG.SelectLeadsByCampaign(req.BotToken, req.Start, req.End)
+	data, err := s.deps.PG.SelectLeadsByCampaign(req.BotToken, req.StartAt, req.EndAt)
 	if err != nil {
 		return s.InternalServerError(c, err)
 	}
 
 	res := &reportsLeadsByCampaignResponse{
-		Leads: leads,
+		Data: data,
 	}
 
 	return c.JSON(res)
