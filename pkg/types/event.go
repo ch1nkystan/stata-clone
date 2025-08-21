@@ -15,6 +15,8 @@ var EventsWhitelist = map[string]struct{}{
 	EventTypeDeposit:  {},
 }
 
+var Events = []string{EventTypeRegister, EventTypeMessage, EventTypeMailing, EventTypeDeposit}
+
 type Event struct {
 	ID        int    `db:"id" json:"id"`
 	EventType string `db:"event_type" json:"event_type"`

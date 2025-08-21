@@ -15,6 +15,13 @@ const (
 	UserMailingStateBlocked    = "blocked"
 )
 
+var MailingStages = []string{
+	UserMailingStateReady,
+	UserMailingStateInProgress,
+	UserMailingStateFinished,
+	UserMailingStateBlocked,
+}
+
 type User struct {
 	ID         int `db:"id" json:"id"`
 	BotID      int `db:"bot_id" json:"bot_id"`

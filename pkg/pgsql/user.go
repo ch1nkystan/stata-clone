@@ -268,6 +268,60 @@ func (c *Client) CreateUser(user *types.User) error {
 	return nil
 }
 
+func (c *Client) CreateUsers(users []types.User) error {
+	sess := c.GetSession()
+
+	stmt := sess.InsertInto("users").Columns(
+		"bot_id",
+		"deeplink_id",
+		"depot_channel_hash",
+		"telegram_channel_id",
+		"telegram_channel_url",
+		"telegram_id",
+		"first_name",
+		"last_name",
+		"forward_sender_name",
+		"username",
+		"ip",
+		"user_agent",
+		"country_code",
+		"os_name",
+		"device_type",
+		"is_bot",
+		"is_premium",
+		"language_code",
+		"deposits_total",
+		"deposits_sum",
+		"deposited",
+		"deposited_at",
+		"seen",
+		"active",
+		"event_created",
+		"mailing_state",
+		"mailing_state_updated_at",
+		"mailing_failed_attempts",
+		"messaged_at",
+		"created_at",
+		"updated_at",
+		"invite_uuid",
+		"subscribed",
+		"subscribed_at",
+		"unsubscribed_at",
+	)
+
+	for _, user := range users {
+		stmt = stmt.Record(user)
+	}
+
+	_, err := stmt.Exec()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) UpdateUserMessagedAt(id int) error {
 	sess := c.GetSession()
 

@@ -15,3 +15,6 @@ run-ticker:
 
 run-online_snapshot:
 	go run cmd/online_snapshot/*.go
+
+run-mock-data:
+	go run ./cmd/mock

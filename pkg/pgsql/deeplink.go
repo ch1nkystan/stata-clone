@@ -2,7 +2,6 @@ package pgsql
 
 import (
 	"fmt"
-
 	"github.com/prosperofair/pkg/log"
 	"github.com/prosperofair/stata/pkg/types"
 )
@@ -21,6 +20,36 @@ func (c *Client) CreateDeeplink(deeplink *types.Deeplink) error {
 	}
 
 	return nil
+}
+
+func (c *Client) CreateDeeplinksIgnoreInsertErrorsReturningAll(deeplink []types.Deeplink) ([]types.Deeplink, error) {
+	sess := c.GetSession()
+
+	stmt := sess.InsertInto("deeplinks").Columns(
+		"bot_id",
+		"referral_telegram_id",
+		"hash",
+		"label",
+		"active",
+	)
+
+	for _, deeplink := range deeplink {
+		stmt = stmt.Record(deeplink)
+	}
+
+	var deeplinks []types.Deeplink
+	err := stmt.Returning(
+		"id",
+		"bot_id",
+		"referral_telegram_id",
+		"active",
+		"hash",
+		"label",
+		"created_at",
+		"updated_at",
+	).Load(&deeplinks)
+
+	return deeplinks, err
 }
 
 func (c *Client) SelectBotDeeplinks(botID int) ([]*types.Deeplink, error) {
@@ -58,6 +87,19 @@ func (c *Client) SelectBotDeeplinksByHash(botID int, hash string) ([]*types.Deep
 	}
 
 	return res, nil
+}
+
+func (c *Client) SelectDeeplinksByHashes(hashes []string) ([]*types.Deeplink, error) {
+	sess := c.GetSession()
+	var res []*types.Deeplink
+
+	_, err := sess.Select("*").
+		From("deeplinks").
+		Where("hash IN ?", hashes).
+		OrderDesc("id").
+		Load(&res)
+
+	return res, err
 }
 
 func (c *Client) SelectBotDeeplinksByReferralID(botID int, referralID int64, limit uint64) ([]*types.Deeplink, error) {

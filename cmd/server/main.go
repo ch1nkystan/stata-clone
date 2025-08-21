@@ -1,16 +1,12 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/gocraft/dbr/v2"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/oschwald/geoip2-golang"
@@ -49,7 +45,7 @@ func main() {
 	}
 
 	log.Info("running migrations...")
-	if err := runMigrations(conn.DB, "./migrations"); err != nil {
+	if err := pgsql.RunMigrations(conn.DB, "./migrations"); err != nil {
 		log.Fatal("failed to run migrations", zap.Error(err))
 	}
 
@@ -119,26 +115,4 @@ func convertTokens(tokens []string) map[string]struct{} {
 	}
 
 	return m
-}
-
-func runMigrations(db *sql.DB, migrationsPath string) error {
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	if err != nil {
-		return err
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://"+migrationsPath, // File source URL
-		"postgres",               // Database name
-		driver,
-	)
-	if err != nil {
-		return err
-	}
-
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return err
-	}
-
-	return nil
 }
